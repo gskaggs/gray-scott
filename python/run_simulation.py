@@ -21,6 +21,7 @@ def parse_args():
     parser.add_argument('--demo', action='store_true', help='Run demo (https://www.chebfun.org/examples/pde/GrayScott.html)')
     parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
+    parser.add_argument('--should_dump', action='store_true', help='Actually creat png files during simulation')
     return parser.parse_known_args()
 
 
@@ -46,7 +47,7 @@ def main():
         demo(args)
         return
 
-    gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir)
+    gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir, should_dump=args.should_dump)
     gs.integrate(0, args.end_time, dump_freq=args.dump_freq)
 
 

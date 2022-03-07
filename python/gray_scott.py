@@ -31,7 +31,8 @@ class GrayScott:
                  initial_condition='trefethen',
                  second_order=False,
                  movie=False,
-                 outdir='.'):
+                 outdir='.',
+                 should_dump=False):
         """
         Constructor.
         The domain is a square.
@@ -61,6 +62,7 @@ class GrayScott:
         self.x1 = x1
 
         # options
+        self.should_dump = should_dump
         self.movie = movie
         self.outdir = outdir
         self.dump_count = 0
