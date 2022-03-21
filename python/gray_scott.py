@@ -123,9 +123,9 @@ class GrayScott:
                 self.dt = t1 - t
             s += 1
 
-        if self.name != '':
+        if self.name != '' and self._check_pattern():
+            print("Turing pattern exists for " + self.name)
             self._dump(s, t)
-            
         
         if self.movie:
             self._render_frames()
@@ -151,6 +151,17 @@ class GrayScott:
         self.update_ghosts(self.v)
 
         return time + self.dt
+
+    def _check_pattern(self):
+        """
+        Check if a Turing pattern is present
+        """
+        # internal domain
+        # u_flat = self.u[1:-1, 1:-1].flatten()
+        v_flat = self.v[1:-1, 1:-1].flatten()
+
+        theta = 0.01
+        return min(v_flat) - max(v_flat) > theta
 
 
     def _euler(self):
