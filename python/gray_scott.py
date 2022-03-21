@@ -157,11 +157,12 @@ class GrayScott:
         Check if a Turing pattern is present
         """
         # internal domain
-        # u_flat = self.u[1:-1, 1:-1].flatten()
         v_flat = self.v[1:-1, 1:-1].flatten()
 
-        theta = 0.01
-        return min(v_flat) - max(v_flat) > theta
+        theta = 0.001
+        diff  = max(v_flat) - min(v_flat) 
+
+        return diff > theta
 
 
     def _euler(self):
