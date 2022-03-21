@@ -19,6 +19,7 @@ def parse_args():
     parser.add_argument('-T', '--end_time', default=3500, type=float, help='Final time')
     parser.add_argument('-d', '--dump_freq', default=100, type=int, help='Dump frequency (integration steps)')
     parser.add_argument('--demo', action='store_true', help='Run demo (https://www.chebfun.org/examples/pde/GrayScott.html)')
+    parser.add_argument('--param_search', action='store_true', help='Run param search')
     parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
     parser.add_argument('--should_dump', action='store_true', help='Actually create png files during simulation')
@@ -45,12 +46,44 @@ def demo(args):
     rolls.integrate(0, 3500, dump_freq=args.dump_freq, should_dump=False)
 
 
+def param_search(args):
+    """
+    Searchers the space of parameters for Turing patterns
+    """
+    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
+    Nf, Nk = 10, 4   # We'll have Nf * Nk simulations
+    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
+
+    num_successes = 0
+    successul_params = []
+    for i in range(Nf):
+        for j in range(Nk):
+            F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
+            print(f"Beginning sim: F={F}, k={k}")
+
+            sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
+            pattern = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
+
+            print('\n')
+
+            if pattern:
+                num_successes += 1
+                successul_params.append((F, k))
+
+    print(f"Param search terminated with {num_successes} turing patterns")
+    for params in successul_params:
+        print(f"F={params[0]}, k={params[1]}")
+
 
 def main():
     args, _ = parse_args()
 
     if args.demo:
         demo(args)
+        return
+
+    if args.param_search:
+        param_search(args)
         return
 
     gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir, name=args.name)

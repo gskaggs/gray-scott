@@ -110,6 +110,10 @@ class GrayScott:
             r1: end time
             dump_freq: dump frequency in steps
             report: stdout report frequency
+        
+        Returns:
+            pattern: is True if simulation terminates
+                     in a Turing pattern
         """
         t = t0
         s = 0
@@ -123,12 +127,16 @@ class GrayScott:
                 self.dt = t1 - t
             s += 1
 
-        if self.name != '' and self._check_pattern():
+        pattern = self._check_pattern()
+
+        if self.name != '' and pattern:
             print("Turing pattern exists for " + self.name)
             self._dump(s, t)
         
         if self.movie:
             self._render_frames()
+
+        return pattern
 
 
     def update(self, *, time=0):
