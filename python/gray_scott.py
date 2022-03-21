@@ -114,7 +114,7 @@ class GrayScott:
         t = t0
         s = 0
         while t < t1:
-            if s % dump_freq == 0:
+            if self.should_dump and s % dump_freq == 0:
                 self._dump(s, t)
             if s % report == 0:
                 print(f"step={s}; time={t:e}")
