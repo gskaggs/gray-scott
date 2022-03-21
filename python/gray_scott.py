@@ -32,7 +32,7 @@ class GrayScott:
                  second_order=False,
                  movie=False,
                  outdir='.',
-                 should_dump=False):
+                 name=''):
         """
         Constructor.
         The domain is a square.
@@ -62,7 +62,7 @@ class GrayScott:
         self.x1 = x1
 
         # options
-        self.should_dump = should_dump
+        self.name = name
         self.movie = movie
         self.outdir = outdir
         self.dump_count = 0
@@ -101,7 +101,7 @@ class GrayScott:
         self.update_ghosts(self.u)
         self.update_ghosts(self.v)
 
-    def integrate(self, t0, t1, *, dump_freq=100, report=50):
+    def integrate(self, t0, t1, *, dump_freq=100, report=50, should_dump=False):
         """
         Integrate system.
 
@@ -114,7 +114,7 @@ class GrayScott:
         t = t0
         s = 0
         while t < t1:
-            if self.should_dump and s % dump_freq == 0:
+            if should_dump and s % dump_freq == 0:
                 self._dump(s, t)
             if s % report == 0:
                 print(f"step={s}; time={t:e}")
@@ -123,6 +123,10 @@ class GrayScott:
                 self.dt = t1 - t
             s += 1
 
+        if self.name != '':
+            self._dump(s, t)
+            
+        
         if self.movie:
             self._render_frames()
 
@@ -230,7 +234,7 @@ class GrayScott:
             ax.set_xlim(lim)
             ax.set_ylim(lim)
             ax.set_aspect('equal')
-        fig.savefig(os.path.join(self.outdir, f"frame_{self.dump_count:06d}.png"), dpi=400)
+        fig.savefig(os.path.join(self.outdir, self.name + f"frame_{self.dump_count:06d}.png"), dpi=400)
         plt.close(fig)
         self.dump_count += 1
 
@@ -238,7 +242,7 @@ class GrayScott:
     def _render_frames(self):
         cmd = ['ffmpeg', '-framerate', '24', '-i',
                 os.path.join(self.outdir, 'frame_%06d.png'), '-b:v', '90M',
-                '-vcodec', 'mpeg4', os.path.join(self.outdir, 'movie.mp4')]
+                '-vcodec', 'mpeg4', os.path.join(self.outdir, self.name + '.mp4')]
         sp.run(cmd)
 
 
