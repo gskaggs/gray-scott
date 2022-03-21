@@ -234,7 +234,7 @@ class GrayScott:
             ax.set_xlim(lim)
             ax.set_ylim(lim)
             ax.set_aspect('equal')
-        fig.savefig(os.path.join(self.outdir, self.name + f"frame_{self.dump_count:06d}.png"), dpi=400)
+        fig.savefig(os.path.join(self.outdir, self.name + f"_frame_{self.dump_count:06d}.png"), dpi=400)
         plt.close(fig)
         self.dump_count += 1
 

@@ -33,12 +33,17 @@ def demo(args):
     """
 
     # 1. Rolls
-    rolls = GrayScott(F=0.04, kappa=0.06, movie=True, outdir="demo_rolls")
-    rolls.integrate(0, 3500, dump_freq=args.dump_freq)
+    # rolls = GrayScott(F=0.04, kappa=0.06, movie=True, outdir="demo_rolls")
+    # rolls.integrate(0, 3500, dump_freq=args.dump_freq)
 
-    # 2. Spots
-    spots = GrayScott(F=0.025, kappa=0.06, movie=True, outdir="demo_spots")
-    spots.integrate(0, 3500, dump_freq=args.dump_freq)
+    # # 2. Spots
+    # spots = GrayScott(F=0.025, kappa=0.06, movie=True, outdir="demo_spots")
+    # spots.integrate(0, 3500, dump_freq=args.dump_freq)
+
+    # 1. Rolls
+    rolls = GrayScott(F=0.04, kappa=0.06, movie=False, outdir=".", name="Rolls")
+    rolls.integrate(0, 3500, dump_freq=args.dump_freq, should_dump=False)
+
 
 
 def main():
