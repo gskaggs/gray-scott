@@ -117,6 +117,7 @@ class GrayScott:
         """
         t = t0
         s = 0
+        latest = 0
         while t < t1:
             if should_dump and s % dump_freq == 0:
                 self._dump(s, t)
@@ -127,6 +128,10 @@ class GrayScott:
                 self.dt = t1 - t
             s += 1
 
+            if self._check_pattern():
+                latest = t
+
+
         pattern = self._check_pattern()
 
         if self.name != '' and pattern:
@@ -136,7 +141,9 @@ class GrayScott:
         if self.movie:
             self._render_frames()
 
-        return pattern
+        print('\n')
+        
+        return pattern, latest
 
 
     def update(self, *, time=0):

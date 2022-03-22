@@ -7,6 +7,7 @@ import argparse
 
 # the file gray_scott.py must be in the PYTHONPATH or in the current directory
 from gray_scott import GrayScott
+from ga import Chromosome
 
 
 def parse_args():
@@ -20,6 +21,7 @@ def parse_args():
     parser.add_argument('-d', '--dump_freq', default=100, type=int, help='Dump frequency (integration steps)')
     parser.add_argument('--demo', action='store_true', help='Run demo (https://www.chebfun.org/examples/pde/GrayScott.html)')
     parser.add_argument('--param_search', action='store_true', help='Run param search')
+    parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
     parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
     parser.add_argument('--should_dump', action='store_true', help='Actually create png files during simulation')
@@ -62,9 +64,7 @@ def param_search(args):
             print(f"Beginning sim: F={F}, k={k}")
 
             sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-            pattern = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
-
-            print('\n')
+            pattern, _ = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
 
             if pattern:
                 num_successes += 1
@@ -73,6 +73,50 @@ def param_search(args):
     print(f"Param search terminated with {num_successes} turing patterns")
     for params in successul_params:
         print(f"F={params[0]}, k={params[1]}")
+
+
+def genetic_algorithm(args):
+    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
+    Nf, Nk = 1, 1   # We'll have Nf * Nk chromosomes
+    N = Nf * Nk
+    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
+
+    chromosomes = []
+    for i in range(Nf):
+        for j in range(Nk):
+            F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
+            chromosomes.append(Chromosome(F, k))
+
+    num_iters = 3
+    for i in range(num_iters):
+        print(f"GA Iteration {i} of {num_iters}")
+        for c in chromosomes:
+            F, k = c.F, c.k
+            sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
+            pattern, latest = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False) 
+            c.set_fitness(latest)
+
+        chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
+        for j in range(N//2):
+            print(j, chromosomes[j].F)
+            chromosomes[2*j] = chromosomes[j].crossover(chromosomes[j+1])
+            chromosomes[2*j].mutate()
+
+    num_successes = 0
+    successul_params = []
+    print("GA: Checking for turing patterns")
+    for c in chromosomes:
+        F, k = c.F, c.k
+        sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
+        pattern, latest = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
+        if pattern:
+            num_successes += 1
+            successul_params.append((F, k))
+
+    print(f"Genetic algorithm terminated with {num_successes} turing patterns out of {N} chromosomes")
+    for params in successul_params:
+        print(f"F={params[0]}, k={params[1]}")
+
 
 
 def main():
@@ -84,6 +128,10 @@ def main():
 
     if args.param_search:
         param_search(args)
+        return
+
+    if args.genetic_algorithm:
+        genetic_algorithm(args)
         return
 
     gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir, name=args.name)
