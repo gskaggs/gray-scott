@@ -142,7 +142,7 @@ class GrayScott:
             self._render_frames()
 
         print('\n')
-        
+
         return pattern, latest
 
 
@@ -230,6 +230,8 @@ class GrayScott:
             time: current time
             both: if true, dump contours for both species U and V
         """
+        plt.switch_backend('Agg') 
+
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
         x = self.x[1:-1, 1:-1]

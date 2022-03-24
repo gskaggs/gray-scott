@@ -8,7 +8,9 @@ import argparse
 # the file gray_scott.py must be in the PYTHONPATH or in the current directory
 from gray_scott import GrayScott
 from ga import Chromosome
-
+from thread_util import run_threads
+from thread_util import ThreadSafeIterable
+import psutil
 
 def parse_args():
     """
@@ -26,6 +28,7 @@ def parse_args():
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
     parser.add_argument('--should_dump', action='store_true', help='Actually create png files during simulation')
     parser.add_argument('--name', default='', type=str, help='Name of the simulation, used to save the results')
+    parser.add_argument('-t', '--num_threads', default=6, type=int, help='Number of threads for the simulation')
     return parser.parse_known_args()
 
 
@@ -56,10 +59,15 @@ def param_search(args):
     Nf, Nk = 10, 4   # We'll have Nf * Nk simulations
     df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
 
-    num_successes = 0
     successul_params = []
-    for i in range(Nf):
-        for j in range(Nk):
+    param_seeds = [(i, j) for i in range(Nf) for j in range(Nk)]
+    param_seeds = ThreadSafeIterable(param_seeds)
+
+    def thread_function(param_seeds, successful_params):
+        param_seed = param_seeds.next()
+        while param_seed is not None:
+            i, j = param_seed
+
             F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
             print(f"Beginning sim: F={F}, k={k}")
 
@@ -67,8 +75,12 @@ def param_search(args):
             pattern, _ = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
 
             if pattern:
-                num_successes += 1
-                successul_params.append((F, k))
+                successful_params.append((F, k))
+
+            param_seed = param_seeds.next()
+
+    run_threads(args.num_threads, thread_function, (param_seeds, successul_params))
+    num_successes = len(successul_params)
 
     print(f"Param search terminated with {num_successes} turing patterns")
     for params in successul_params:
@@ -121,6 +133,9 @@ def genetic_algorithm(args):
 
 def main():
     args, _ = parse_args()
+
+    print(print(f'thread count per core: {psutil.cpu_count() // psutil.cpu_count(logical=False)}'))
+    print('Num_threads =', args.num_threads)
 
     if args.demo:
         demo(args)
