@@ -89,7 +89,7 @@ def param_search(args):
 
 def genetic_algorithm(args):
     F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 1, 1   # We'll have Nf * Nk chromosomes
+    Nf, Nk = 10, 4   # We'll have Nf * Nk chromosomes
     N = Nf * Nk
     df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
 
@@ -99,7 +99,7 @@ def genetic_algorithm(args):
             F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
             chromosomes.append(Chromosome(F, k))
 
-    num_iters = 3
+    num_iters = 10
     for i in range(num_iters):
         print(f"GA Iteration {i} of {num_iters}")
         chromosomes = ThreadSafeIterable(chromosomes)
