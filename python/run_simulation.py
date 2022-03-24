@@ -102,11 +102,20 @@ def genetic_algorithm(args):
     num_iters = 3
     for i in range(num_iters):
         print(f"GA Iteration {i} of {num_iters}")
-        for c in chromosomes:
-            F, k = c.F, c.k
-            sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-            pattern, latest = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False) 
-            c.set_fitness(latest)
+        chromosomes = ThreadSafeIterable(chromosomes)
+
+        def thread_function(chromosomes):
+            c = chromosomes.next()
+            while c is not None:
+                F, k = c.F, c.k
+                sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
+                pattern, latest = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False) 
+                c.set_fitness(latest)
+
+                c = chromosomes.next()
+
+        run_threads(args.num_threads, thread_function, (chromosomes,))
+        chromosomes = chromosomes.get_data()
 
         chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
         for j in range(N//2):
@@ -134,7 +143,7 @@ def genetic_algorithm(args):
 def main():
     args, _ = parse_args()
 
-    print(print(f'thread count per core: {psutil.cpu_count() // psutil.cpu_count(logical=False)}'))
+    print(f'thread count per core: {psutil.cpu_count() // psutil.cpu_count(logical=False)}')
     print('Num_threads =', args.num_threads)
 
     if args.demo:

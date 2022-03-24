@@ -25,3 +25,6 @@ class ThreadSafeIterable:
             result = self.data[self.counter]
             self.counter += 1
             return result
+
+    def get_data(self):
+        return self.data
