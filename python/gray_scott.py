@@ -230,6 +230,7 @@ class GrayScott:
             time: current time
             both: if true, dump contours for both species U and V
         """
+        return
         plt.switch_backend('Agg') 
 
         if not os.path.exists(self.outdir):

@@ -3,6 +3,9 @@
 # Created    : Sat Jan 30 2021 09:13:51 PM (+0100)
 # Description: Gray-Scott driver.  Use the --help argument for all options
 # Copyright 2021 ETH Zurich. All Rights Reserved.
+import matplotlib
+matplotlib.use('Agg')
+
 import argparse
 
 # the file gray_scott.py must be in the PYTHONPATH or in the current directory
@@ -109,7 +112,7 @@ def genetic_algorithm(args):
             while c is not None:
                 F, k = c.F, c.k
                 sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-                pattern, latest = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False) 
+                pattern, latest = sim.integrate(0, 3500, dump_freq=args.dump_freq, report=250, should_dump=False) 
                 c.set_fitness(latest)
 
                 c = chromosomes.next()
