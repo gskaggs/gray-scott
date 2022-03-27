@@ -64,7 +64,7 @@ def apply_fitness_function(chromosomes, type):
         best = []
         while True:
             try:
-                best = map(int, input(f'Top {N//4} performers:').split(' '))
+                best = list(map(int, input(f'Top {N//4} performers:').split(' ')))
             except:
                 print("Input integers please.")
                 continue 
@@ -75,7 +75,7 @@ def apply_fitness_function(chromosomes, type):
                 continue
             
             # 0-index
-            best = map(lambda x: x-1, best)
+            best = list(map(lambda x: x-1, best))
 
             break
         
@@ -83,7 +83,7 @@ def apply_fitness_function(chromosomes, type):
             result[i] = chromosomes[best[i]]
 
         for i in range(N//4, N):
-            mate1, mate2 = np.random.choice(best, 2)
+            mate1, mate2 = tuple(map(lambda x: chromosomes[x], np.random.choice(best, 2)))
             result[i] = mate1.crossover(mate2)
 
     return result

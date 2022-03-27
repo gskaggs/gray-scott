@@ -162,7 +162,7 @@ def genetic_algorithm(args):
                 cur = Nk*i+j
                 c = chromosomes[cur]
                 F, k = round(c.F, 4), round(c.k, 4) 
-                img_text[i][j] = f'#{cur}: F={F}, K={k}'
+                img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
                 images[i][j]   = chromosomes[cur].image
                 if c.pattern:
                     num_successes += 1
