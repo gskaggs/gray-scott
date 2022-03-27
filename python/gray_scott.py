@@ -134,12 +134,7 @@ class GrayScott:
 
 
         pattern = self._check_pattern()
-        V = (0 * self.v[1:-1, 1:-1]).astype(np.uint8)
-        image = im.fromarray(0*V)    
-
-        if self.name != '' and pattern:
-            print("Turing pattern exists for " + self.name)
-            image = self._dump(s, t)
+        image = self._dump(s, t)
         
         if self.movie:
             self._render_frames()
@@ -235,7 +230,8 @@ class GrayScott:
         """
         V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)
         image = im.fromarray(V)      
-        image.save(os.path.join(self.outdir, self.name + f"_frame_{self.dump_count:06d}.png"))
+        if self.name != '': 
+           image.save(os.path.join(self.outdir, self.name + f"_frame_{self.dump_count:06d}.png"))
         return image
 
 
