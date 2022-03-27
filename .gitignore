@@ -4,3 +4,4 @@ demo*
 *.gif
 *.png
 *.html
+./python/dump.txt
