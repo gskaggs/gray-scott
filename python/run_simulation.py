@@ -3,6 +3,7 @@
 # Created    : Sat Jan 30 2021 09:13:51 PM (+0100)
 # Description: Gray-Scott driver.  Use the --help argument for all options
 # Copyright 2021 ETH Zurich. All Rights Reserved.
+from email.mime import image
 import matplotlib
 matplotlib.use('Agg')
 
@@ -75,7 +76,7 @@ def param_search(args):
             print(f"Beginning sim: F={F}, k={k}")
 
             sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-            pattern, _ = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
+            pattern, _, image = sim.integrate(0, 20, dump_freq=args.dump_freq, report=250, should_dump=False)
 
             if pattern:
                 successful_params.append((F, k))
@@ -112,7 +113,7 @@ def genetic_algorithm(args):
             while c is not None:
                 F, k = c.F, c.k
                 sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-                pattern, latest = sim.integrate(0, 3500, dump_freq=args.dump_freq, report=250, should_dump=False) 
+                pattern, latest, image = sim.integrate(0, 3500, dump_freq=args.dump_freq, report=250, should_dump=False) 
                 c.set_fitness(latest)
 
                 c = chromosomes.next()
@@ -132,7 +133,7 @@ def genetic_algorithm(args):
     for c in chromosomes:
         F, k = c.F, c.k
         sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-        pattern, latest = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
+        pattern, latest, image = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
         if pattern:
             num_successes += 1
             successul_params.append((F, k))

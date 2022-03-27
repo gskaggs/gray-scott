@@ -6,6 +6,7 @@ import os
 import numpy as np
 import subprocess as sp
 import matplotlib.pyplot as plt
+from PIL import Image as im
 
 class GrayScott:
     """
@@ -133,17 +134,19 @@ class GrayScott:
 
 
         pattern = self._check_pattern()
+        V = (0 * self.v[1:-1, 1:-1]).astype(np.uint8)
+        image = im.fromarray(0*V)    
 
         if self.name != '' and pattern:
             print("Turing pattern exists for " + self.name)
-            self._dump(s, t)
+            image = self._dump(s, t)
         
         if self.movie:
             self._render_frames()
 
         print('\n')
 
-        return pattern, latest
+        return pattern, latest, image
 
 
     def update(self, *, time=0):
@@ -230,7 +233,13 @@ class GrayScott:
             time: current time
             both: if true, dump contours for both species U and V
         """
-        return
+        V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)
+        image = im.fromarray(V)      
+        image.save(os.path.join(self.outdir, self.name + f"_frame_{self.dump_count:06d}.png"))
+        return image
+
+
+    def _old_dump(self, step, time, *, both=False):
         plt.switch_backend('Agg') 
 
         if not os.path.exists(self.outdir):
