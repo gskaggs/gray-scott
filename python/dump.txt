@@ -1,0 +1,605 @@
+thread count per core: 2
+Num_threads = 6
+Beginning sim: F=0.01, k=0.04
+Beginning sim: F=0.01, k=0.05
+Beginning sim: F=0.01, k=0.06
+Beginning sim: F=0.01, k=0.07
+Beginning sim: F=0.02, k=0.04
+Beginning sim: F=0.02, k=0.05
+step=0; time=0.000000e+00
+step=0; time=0.000000e+00
+step=0; time=0.000000e+00
+step=0; time=0.000000e+00
+step=0; time=0.000000e+00
+step=0; time=0.000000e+00
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+
+
+Beginning sim: F=0.02, k=0.06
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.02, k=0.07
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.03, k=0.04
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.03, k=0.05
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.03, k=0.06
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.03, k=0.07
+step=0; time=0.000000e+00
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+
+
+Beginning sim: F=0.04, k=0.04
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.04, k=0.05
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.04, k=0.06
+
+
+Beginning sim: F=0.04, k=0.07
+step=0; time=0.000000e+00
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.05, k=0.04
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.05, k=0.05
+step=0; time=0.000000e+00
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+step=5500; time=3.356934e+03
+
+
+Beginning sim: F=0.05, k=0.06
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.05, k=0.07
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.06, k=0.04
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.06, k=0.05
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.06, k=0.06
+step=0; time=0.000000e+00
+
+
+Beginning sim: F=0.06, k=0.07
+step=0; time=0.000000e+00
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=250; time=1.525879e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=500; time=3.051758e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=750; time=4.577637e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1000; time=6.103516e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1250; time=7.629395e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1500; time=9.155273e+02
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=1750; time=1.068115e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2000; time=1.220703e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2250; time=1.373291e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2500; time=1.525879e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=2750; time=1.678467e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3000; time=1.831055e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3250; time=1.983643e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3500; time=2.136230e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=3750; time=2.288818e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4000; time=2.441406e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4250; time=2.593994e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4500; time=2.746582e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=4750; time=2.899170e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5000; time=3.051758e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
+step=5250; time=3.204346e+03
