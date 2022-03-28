@@ -54,11 +54,14 @@ def apply_fitness_function(chromosomes, type):
 
     if type == 'default':
         chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
-        for i in range(N//2):
+        eps = 0.5 # Percent of population which survives to next round
+        survivors = int(eps * N)
+        best = range(survivors)
+        for i in range(survivors):
             result[i] = chromosomes[i]
-            if 2*i >= N:
-                break
-            result[2*i] = chromosomes[i].crossover(chromosomes[i+1])
+        for i in range(survivors, N):
+            mate1, mate2 = tuple(map(lambda x: chromosomes[x], np.random.choice(best, 2)))
+            result[i] = mate1.crossover(mate2)
 
     else:
         best = []

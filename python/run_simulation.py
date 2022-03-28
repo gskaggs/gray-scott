@@ -139,7 +139,7 @@ def genetic_algorithm(args):
             while c is not None:
                 F, k = c.F, c.k
                 sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-                pattern, latest, image = sim.integrate(0, 20, dump_freq=args.dump_freq, report=250, should_dump=False) 
+                pattern, latest, image = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False) 
                 c.set_fitness(latest)
                 c.set_pattern(pattern)
                 c.set_image(image)
