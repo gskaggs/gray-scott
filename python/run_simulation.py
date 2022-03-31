@@ -14,9 +14,14 @@ from ga import Chromosome
 from ga import apply_fitness_function
 from thread_util import run_threads
 from thread_util import ThreadSafeIterable
+from process_util import start_processes
+from process_util import ProcessSafeIterable
+from process_util import end_processes
 from PIL import Image as im
 from PIL import ImageFont
 from PIL import ImageDraw 
+from multiprocessing import Queue
+import time
 import psutil
 
 def parse_args():
@@ -33,9 +38,9 @@ def parse_args():
     parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
     parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
-    parser.add_argument('--should_dump', action='store_true', help='Actually create png files during simulation')
+    parser.add_argument('--should_dump', action='store_true', default=True, help='Actually create png files during simulation')
     parser.add_argument('--name', default='', type=str, help='Name of the simulation, used to save the results')
-    parser.add_argument('-t', '--num_threads', default=1, type=int, help='Number of threads for the simulation')
+    parser.add_argument('-t', '--num_threads', default=6, type=int, help='Number of threads for the simulation')
     return parser.parse_known_args()
 
 
@@ -55,7 +60,7 @@ def demo(args):
 
     # 1. Rolls
     rolls = GrayScott(F=0.04, kappa=0.06, movie=False, outdir=".", name="Rolls")
-    rolls.integrate(0, 3500, dump_freq=args.dump_freq, should_dump=False)
+    rolls.integrate(0, 3500, dump_freq=args.dump_freq, should_dump=True)
 
 def create_img_grid(images, text):
     W, H = images[0][0].width, images[0][0].height
@@ -73,7 +78,7 @@ def create_img_grid(images, text):
 
     return grid
 
-def param_search(args):
+def param_search_t(args):
     """
     Searchers the space of parameters for Turing patterns
     """
@@ -95,15 +100,18 @@ def param_search(args):
             print(f"Beginning sim: F={F}, k={k}")
 
             sim = GrayScott(F=F, kappa=k, movie=False, outdir="./garbage", name=f"{F}_{k}")
-            pattern, _, image = sim.integrate(0, 3500, dump_freq=args.dump_freq, report=250, should_dump=False)
+            pattern, _, image = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
             images[i][j] = image
             if pattern:
                 successful_params.append((F, k))
 
             param_seed = param_seeds.next()
 
+    start = time.time()
     run_threads(args.num_threads, thread_function, (param_seeds, successul_params))
     num_successes = len(successul_params)
+    end = time.time()
+    print(f'Threading time taken {start-end}')
 
     img_text = [[f'F={round(F0 + i * df, 3)}, K={round(k0 + j * dk, 3)}' for j in range(Nk)] for i in range(Nf)]
     grid = create_img_grid(images, img_text)
@@ -113,6 +121,68 @@ def param_search(args):
     for params in successul_params:
         print(f"F={params[0]}, k={params[1]}")
 
+def process_function(param_seeds, images, successful_params):
+    while True:
+        i, j, F, k = param_seeds.get()
+        if i == "DONE":
+            break
+
+        print(f"Beginning sim: F={F}, k={k}")
+
+        sim = GrayScott(F=F, kappa=k, movie=False, outdir="./garbage", name=f"{F}_{k}")
+        pattern, _, image = sim.integrate(0, 2000, dump_freq=100, report=250, should_dump=False)
+        images.put((i, j, image))
+
+        print(f"Done with sim F={F}, k={k}")
+
+    images.put(('DONE', None, None))
+    
+def param_search(args):
+    """
+    Searchers the space of parameters for Turing patterns
+    """
+    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
+    Nf, Nk = 20, 10   # We'll have Nf * Nk simulations
+    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
+
+    successul_params = []
+    images = [[None for _ in range(Nk)] for _ in range(Nf)]
+    image_queue = Queue()
+    param_seeds = [(i, j, round(F0 + i * df, 3), round(k0 + j * dk, 3)) for i in range(Nf) for j in range(Nk)]
+    for _ in range(args.num_threads):
+        param_seeds.append(("DONE", None, None, None))
+
+    q = Queue()
+    for param in param_seeds:
+        q.put(param)
+
+    param_seeds = q
+
+    start = time.time()
+    processes = start_processes(args.num_threads, process_function, (param_seeds, image_queue, successul_params))
+    num_successes = len(successul_params)
+
+    img_text = [[f'F={round(F0 + i * df, 3)}, K={round(k0 + j * dk, 3)}' for j in range(Nk)] for i in range(Nf)]
+
+    count = 0
+    while count < args.num_threads:
+        i, j, image = image_queue.get()
+        if i == 'DONE':
+            count+=1
+            print(i)
+            continue
+        images[i][j] = image
+        print(i,j)
+
+    end_processes(processes)
+    end = time.time()
+    print(f'Processes time taken {start-end}')
+
+    grid = create_img_grid(images, img_text)
+    grid.save('param_search.png')
+    print(f"Param search terminated with {num_successes} turing patterns")
+    for params in successul_params:
+        print(f"F={params[0]}, k={params[1]}")
 
 def genetic_algorithm(args):
     F0, F1, k0, k1 = 0.01, .11, 0.04, .08
@@ -187,6 +257,7 @@ def main():
     args, _ = parse_args()
 
     print(f'thread count per core: {psutil.cpu_count() // psutil.cpu_count(logical=False)}')
+    print(f"Num cores = {psutil.cpu_count(logical=False)}")
     print('Num_threads =', args.num_threads)
 
     if args.demo:
