@@ -116,6 +116,7 @@ class GrayScott:
             pattern: is True if simulation terminates
                      in a Turing pattern
         """
+        print(f'Beginning simulation with F {self.F} and k {self.kappa}')
         t = t0
         s = 0
         latest = 0

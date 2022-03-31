@@ -121,7 +121,7 @@ def param_search_t(args):
     for params in successul_params:
         print(f"F={params[0]}, k={params[1]}")
 
-def process_function(param_seeds, images, successful_params):
+def process_function_param_search(param_seeds, images, successful_params):
     while True:
         i, j, F, k = param_seeds.get()
         if i == "DONE":
@@ -136,6 +136,21 @@ def process_function(param_seeds, images, successful_params):
         print(f"Done with sim F={F}, k={k}")
 
     images.put(('DONE', None, None))
+
+def process_function_ga(chromosomes, modified):
+    while True:
+        c = chromosomes.get()
+        if c == 'DONE':
+            break
+        F, k = c.F, c.k
+        sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
+        pattern, latest, image = sim.integrate(0, 2000, dump_freq=100, report=250, should_dump=False) 
+        c.set_fitness(latest)
+        c.set_pattern(pattern)
+        c.set_image(image)
+        modified.put(c)
+
+    modified.put('DONE')
     
 def param_search(args):
     """
@@ -184,7 +199,7 @@ def param_search(args):
     for params in successul_params:
         print(f"F={params[0]}, k={params[1]}")
 
-def genetic_algorithm(args):
+def genetic_algorithm_t(args):
     F0, F1, k0, k1 = 0.01, .11, 0.04, .08
     Nf, Nk = 10, 5   # We'll have Nf * Nk chromosomes
     N = Nf * Nk
@@ -244,6 +259,81 @@ def genetic_algorithm(args):
 
         # Fitness function
         chromosomes = apply_fitness_function(chromosomes, 'default')
+        
+
+
+    print(f"Genetic algorithm terminated with {num_successes} turing patterns out of {N} chromosomes")
+    for params in successul_params:
+        print(f"F={params[0]}, k={params[1]}")
+
+def genetic_algorithm(args):
+    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
+    Nf, Nk = 2, 2   # We'll have Nf * Nk chromosomes
+    N = Nf * Nk
+    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
+
+    chromosomes = []
+    for i in range(Nf):
+        for j in range(Nk):
+            F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
+            chromosomes.append(Chromosome(F, k))
+    for _ in range(args.num_threads):
+        chromosomes.append("DONE")
+
+    num_successes = 0
+    successul_params = []
+    num_iters = 2
+
+    for iter in range(num_iters):
+        print(f"GA Iteration {iter+1} of {num_iters}")
+        q, modified = Queue(), Queue()
+        for c in chromosomes:
+            q.put(c)
+        chromosomes = q
+
+        start = time.time()
+        processes = start_processes(args.num_threads, process_function_ga, (chromosomes, modified))
+        
+        count = 0
+        chromosomes = []
+        while count < args.num_threads:
+            c = modified.get()
+            if c == 'DONE':
+                count+=1
+                continue
+            chromosomes.append(c)
+
+        end_processes(processes)
+        end = time.time()
+        print(f'Generation {iter+1} time taken {start-end}')
+
+        chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
+
+        img_text = [['' for _ in range(Nk)] for _ in range(Nf)]
+        images   = [[None for _ in range(Nk)] for _ in range(Nf)]
+
+        num_successes = 0
+        successul_params = []
+
+        for i in range(Nf):
+            for j in range(Nk):
+                cur = Nk*i+j
+                c = chromosomes[cur]
+                F, k = round(c.F, 4), round(c.k, 4) 
+                img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
+                images[i][j]   = chromosomes[cur].image
+                if c.pattern:
+                    num_successes += 1
+                    successul_params.append((F, k))
+                    
+
+        grid = create_img_grid(images, img_text)
+        grid.save(f'ga_search_iter_{iter}.png')
+
+        # Fitness function
+        chromosomes = apply_fitness_function(chromosomes, 'default')
+        for _ in range(args.num_threads):
+            chromosomes.append("DONE")
         
 
 
