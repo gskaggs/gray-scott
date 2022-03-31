@@ -77,11 +77,13 @@ class GrayScott:
         self.fa = Du / dx**2
         self.fs = Dv / dx**2
         self.dt = Fo * dx**2 / (4*max(Du, Dv))
+        print(self.dt)
 
         # nodal grid (+ghosts)
         x = np.linspace(x0-dx, x1+dx, Nnodes+2)
         y = np.linspace(x0-dx, x1+dx, Nnodes+2)
         self.x, self.y = np.meshgrid(x, y)
+        print(Nnodes)
 
         # initial condition
         self.u = np.zeros((len(x), len(y)))
@@ -120,10 +122,10 @@ class GrayScott:
         s = 0
         latest = 0
         while t < t1:
-            if should_dump and s % dump_freq == 0:
-                self._dump(s, t)
-            if s % report == 0:
-                print(f"step={s}; time={t:e}")
+            # if should_dump and s % dump_freq == 0:
+            #     self._dump(s, t)
+            # if s % report == 0:
+            #     print(f"step={s}; time={t:e}")
             t = self.update(time=t)
             if (t1 - t) < self.dt:
                 self.dt = t1 - t
@@ -132,14 +134,15 @@ class GrayScott:
             if self._check_pattern():
                 latest = t
 
+        print(s)
 
         pattern = self._check_pattern()
         image = self._dump(s, t)
         
-        if self.movie:
-            self._render_frames()
+        # if self.movie:
+        #     self._render_frames()
 
-        print('\n')
+        # print('\n')
 
         return pattern, latest, image
 

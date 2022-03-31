@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
     parser.add_argument('--should_dump', action='store_true', help='Actually create png files during simulation')
     parser.add_argument('--name', default='', type=str, help='Name of the simulation, used to save the results')
-    parser.add_argument('-t', '--num_threads', default=6, type=int, help='Number of threads for the simulation')
+    parser.add_argument('-t', '--num_threads', default=1, type=int, help='Number of threads for the simulation')
     return parser.parse_known_args()
 
 
@@ -78,7 +78,7 @@ def param_search(args):
     Searchers the space of parameters for Turing patterns
     """
     F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 10, 4   # We'll have Nf * Nk simulations
+    Nf, Nk = 2, 2   # We'll have Nf * Nk simulations
     df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
 
     successul_params = []
@@ -116,7 +116,7 @@ def param_search(args):
 
 def genetic_algorithm(args):
     F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 5, 4   # We'll have Nf * Nk chromosomes
+    Nf, Nk = 10, 5   # We'll have Nf * Nk chromosomes
     N = Nf * Nk
     df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
 
@@ -128,10 +128,10 @@ def genetic_algorithm(args):
 
     num_successes = 0
     successul_params = []
-    num_iters = 10
+    num_iters = 15
 
     for iter in range(num_iters):
-        print(f"GA Iteration {iter} of {num_iters}")
+        print(f"GA Iteration {iter+1} of {num_iters}")
         chromosomes = ThreadSafeIterable(chromosomes)
 
         def thread_function(chromosomes):

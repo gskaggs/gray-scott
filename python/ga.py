@@ -54,7 +54,7 @@ def apply_fitness_function(chromosomes, type):
 
     if type == 'default':
         chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
-        eps = 0.5 # Percent of population which survives to next round
+        eps = 0.2 # Percent of population which survives to next round
         survivors = int(eps * N)
         best = range(survivors)
         for i in range(survivors):
