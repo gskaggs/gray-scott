@@ -268,7 +268,7 @@ def genetic_algorithm_t(args):
 
 def genetic_algorithm(args):
     F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 2, 2   # We'll have Nf * Nk chromosomes
+    Nf, Nk = 20, 5   # We'll have Nf * Nk chromosomes
     N = Nf * Nk
     df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
 
@@ -282,7 +282,7 @@ def genetic_algorithm(args):
 
     num_successes = 0
     successul_params = []
-    num_iters = 2
+    num_iters = 10
 
     for iter in range(num_iters):
         print(f"GA Iteration {iter+1} of {num_iters}")
