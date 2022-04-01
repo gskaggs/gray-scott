@@ -102,7 +102,7 @@ class GrayScott:
         self.update_ghosts(self.u)
         self.update_ghosts(self.v)
 
-    def integrate(self, t0, t1, *, dump_freq=100, report=50, should_dump=False):
+    def integrate(self, t0, t1, *, dump_freq=100, report=50, should_dump=False, fitness='pattern'):
         """
         Integrate system.
 
@@ -130,11 +130,15 @@ class GrayScott:
                 self.dt = t1 - t
             s += 1
 
-            if self._check_pattern():
+            if fitness=='pattern' and self._check_pattern():
                 latest = t
+            
 
         pattern = self._check_pattern()
         image = self._dump(s, t)
+
+        if fitness=='gradient':
+            latest = self._dirichlet()
         
         # if self.movie:
         #     self._render_frames()
@@ -164,6 +168,15 @@ class GrayScott:
         self.update_ghosts(self.v)
 
         return time + self.dt
+
+    def _dirichlet(self):
+        '''
+        Computes a proxy for the Dirichlet energy of v.
+        This is used as a heuristic for how complex the pattern is.
+        '''
+        grad = np.gradient(self.v[1:-1, 1:-1])
+        grad = [l**2 for l in grad]
+        return sum(sum(sum(grad)))
 
     def _check_pattern(self):
         """

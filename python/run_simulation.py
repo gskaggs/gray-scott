@@ -144,7 +144,7 @@ def process_function_ga(chromosomes, modified):
             break
         F, k = c.F, c.k
         sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-        pattern, latest, image = sim.integrate(0, 2000, dump_freq=100, report=250, should_dump=False) 
+        pattern, latest, image = sim.integrate(0, 2000, dump_freq=100, report=250, should_dump=False, fitness='gradient') 
         c.set_fitness(latest)
         c.set_pattern(pattern)
         c.set_image(image)
@@ -268,7 +268,7 @@ def genetic_algorithm_t(args):
 
 def genetic_algorithm(args):
     F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 20, 5   # We'll have Nf * Nk chromosomes
+    Nf, Nk = 10, 2   # We'll have Nf * Nk chromosomes
     N = Nf * Nk
     df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
 
@@ -282,7 +282,7 @@ def genetic_algorithm(args):
 
     num_successes = 0
     successul_params = []
-    num_iters = 10
+    num_iters = 5
 
     for iter in range(num_iters):
         print(f"GA Iteration {iter+1} of {num_iters}")
