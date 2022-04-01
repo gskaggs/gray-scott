@@ -232,7 +232,7 @@ class GrayScott:
         v_view += 0.5 * self.dt * (v_rhs1 + v_rhs2)
 
 
-    def _dump(self, step, time, *, both=False):
+    def _dump(self, step, time, *, both=False, save=False):
         """
         Dump snapshot
 
@@ -243,7 +243,7 @@ class GrayScott:
         """
         V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)
         image = im.fromarray(V)      
-        if self.name != '': 
+        if save: 
            image.save(os.path.join(self.outdir, self.name + f"_frame_{self.dump_count:06d}.png"))
         return image
 

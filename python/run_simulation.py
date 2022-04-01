@@ -3,10 +3,13 @@
 # Created    : Sat Jan 30 2021 09:13:51 PM (+0100)
 # Description: Gray-Scott driver.  Use the --help argument for all options
 # Copyright 2021 ETH Zurich. All Rights Reserved.
+import threading
 import matplotlib
 matplotlib.use('Agg')
 
 import argparse
+import pickle
+import os
 
 # the file gray_scott.py must be in the PYTHONPATH or in the current directory
 from gray_scott import GrayScott
@@ -35,6 +38,7 @@ def parse_args():
     parser.add_argument('-d', '--dump_freq', default=100, type=int, help='Dump frequency (integration steps)')
     parser.add_argument('--demo', action='store_true', help='Run demo (https://www.chebfun.org/examples/pde/GrayScott.html)')
     parser.add_argument('--param_search', action='store_true', help='Run param search')
+    parser.add_argument('--resume_file', default='resume.pkl', type=str, help='Where intermediate program values should be stored for genetic algorithm')
     parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
     parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
@@ -266,9 +270,92 @@ def genetic_algorithm_t(args):
     for params in successul_params:
         print(f"F={params[0]}, k={params[1]}")
 
+def run_generation(chromosomes, iter, Nf, Nk, num_iters, args):
+    print(f"GA Iteration {iter} of {num_iters}")
+    for _ in range(args.num_threads):
+        chromosomes.append("DONE")
+
+    q, modified = Queue(), Queue()
+    for c in chromosomes:
+        q.put(c)
+    chromosomes = q
+
+    start = time.time()
+    processes = start_processes(args.num_threads, process_function_ga, (chromosomes, modified))
+    
+    count = 0
+    chromosomes = []
+    while count < args.num_threads:
+        c = modified.get()
+        if c == 'DONE':
+            count+=1
+            continue
+        chromosomes.append(c)
+
+    end_processes(processes)
+    end = time.time()
+    print(f'Generation {iter} time taken {start-end}')
+
+    chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
+
+    img_text = [['' for _ in range(Nk)] for _ in range(Nf)]
+    images   = [[None for _ in range(Nk)] for _ in range(Nf)]
+    successul_params = []
+
+    for i in range(Nf):
+        for j in range(Nk):
+            cur = Nk*i+j
+            c = chromosomes[cur]
+            F, k = round(c.F, 4), round(c.k, 4) 
+            img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
+            images[i][j]   = chromosomes[cur].image
+            if c.pattern:
+                successul_params.append((F, k))
+                
+
+    grid = create_img_grid(images, img_text)
+    grid.save(f'ga_search_iter_{iter}.png')
+
+    return chromosomes, successul_params 
+
+def resume_ga(args):
+    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
+    Nf, Nk = 2, 2   # We'll have Nf * Nk chromosomes
+    N = Nf * Nk
+    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
+
+    chromosomes, iter, num_iters = [], 1, 3
+    for i in range(Nf):
+        for j in range(Nk):
+            F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
+            chromosomes.append(Chromosome(F, k))
+
+    if os.path.exists(args.resume_file):
+        with open(args.resume_file, 'rb') as file:
+            chromosomes, Nf, Nk, iter, num_iters = pickle.load(file)
+            chromosomes = apply_fitness_function(chromosomes, 'user_input')
+
+    else:
+        with open(args.resume_file, 'w') as file:
+            # Just making the file for now
+            pass
+
+    chromosomes, successul_params = run_generation(chromosomes, iter, Nf, Nk, num_iters, args)
+
+    if iter < num_iters:
+        with open(args.resume_file, 'wb') as file:
+            pickle.dump((chromosomes, Nf, Nk, iter+1, num_iters), file)
+
+    else:
+        print(f"Genetic algorithm terminated with {len(successul_params)} turing patterns out of {N} chromosomes")
+        for params in successul_params:
+            print(f"F={params[0]}, k={params[1]}")
+
+    
+
 def genetic_algorithm(args):
     F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 10, 2   # We'll have Nf * Nk chromosomes
+    Nf, Nk = 10, 10   # We'll have Nf * Nk chromosomes
     N = Nf * Nk
     df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
 
@@ -280,64 +367,15 @@ def genetic_algorithm(args):
     for _ in range(args.num_threads):
         chromosomes.append("DONE")
 
-    num_successes = 0
+    num_iters = 10
     successul_params = []
-    num_iters = 5
 
     for iter in range(num_iters):
-        print(f"GA Iteration {iter+1} of {num_iters}")
-        q, modified = Queue(), Queue()
-        for c in chromosomes:
-            q.put(c)
-        chromosomes = q
-
-        start = time.time()
-        processes = start_processes(args.num_threads, process_function_ga, (chromosomes, modified))
-        
-        count = 0
-        chromosomes = []
-        while count < args.num_threads:
-            c = modified.get()
-            if c == 'DONE':
-                count+=1
-                continue
-            chromosomes.append(c)
-
-        end_processes(processes)
-        end = time.time()
-        print(f'Generation {iter+1} time taken {start-end}')
-
-        chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
-
-        img_text = [['' for _ in range(Nk)] for _ in range(Nf)]
-        images   = [[None for _ in range(Nk)] for _ in range(Nf)]
-
-        num_successes = 0
-        successul_params = []
-
-        for i in range(Nf):
-            for j in range(Nk):
-                cur = Nk*i+j
-                c = chromosomes[cur]
-                F, k = round(c.F, 4), round(c.k, 4) 
-                img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
-                images[i][j]   = chromosomes[cur].image
-                if c.pattern:
-                    num_successes += 1
-                    successul_params.append((F, k))
-                    
-
-        grid = create_img_grid(images, img_text)
-        grid.save(f'ga_search_iter_{iter}.png')
-
-        # Fitness function
+        chromosomes, successul_params = run_generation(chromosomes,iter, Nf, Nk, num_iters, args)
         chromosomes = apply_fitness_function(chromosomes, 'default')
-        for _ in range(args.num_threads):
-            chromosomes.append("DONE")
-        
 
 
-    print(f"Genetic algorithm terminated with {num_successes} turing patterns out of {N} chromosomes")
+    print(f"Genetic algorithm terminated with {len(successul_params)} turing patterns out of {N} chromosomes")
     for params in successul_params:
         print(f"F={params[0]}, k={params[1]}")
 
@@ -359,7 +397,8 @@ def main():
         return
 
     if args.genetic_algorithm:
-        genetic_algorithm(args)
+        resume_ga(args)
+        # genetic_algorithm(args)
         return
 
     gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir, name=args.name)
