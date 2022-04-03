@@ -137,7 +137,7 @@ class GrayScott:
         pattern = self._check_pattern()
         image = self._dump(s, t)
 
-        if fitness=='gradient':
+        if fitness=='dirichlet':
             latest = self._dirichlet()
         
         # if self.movie:

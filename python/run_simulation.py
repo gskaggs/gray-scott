@@ -41,6 +41,8 @@ def parse_args():
     parser.add_argument('-k0', default=0.04, type=float, help='')
     parser.add_argument('-k1', default=0.08, type=float, help='')
     parser.add_argument('-num_iters', default=10, type=int, help='How many generations of ga to run.')
+    parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
+    parser.add_argument('-rd', default='gray-scott', type=str, help='The kind of reaction diffussion equation to use.')
 
     parser.add_argument('-F', '--feed_rate', default=0.04, type=float, help='Feed rate F')
     parser.add_argument('-k', '--death_rate', default=0.06, type=float, help='Death rate kappa')
@@ -54,7 +56,7 @@ def parse_args():
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
     parser.add_argument('--should_dump', action='store_true', default=True, help='Actually create png files during simulation')
     parser.add_argument('--name', default='', type=str, help='Name of the simulation, used to save the results')
-    parser.add_argument('-t', '--num_threads', default=6, type=int, help='Number of threads for the simulation')
+    parser.add_argument('-t', '--num_processes', default=6, type=int, help='Number of threads for the simulation')
     return parser.parse_known_args()
 
 
@@ -65,6 +67,10 @@ def demo(args):
     """
     rolls = GrayScott(F=0.04, kappa=0.06, movie=False, outdir=".", name="Rolls")
     rolls.integrate(0, 3500, dump_freq=args.dump_freq, should_dump=True)
+    
+    gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir, name=args.name)
+    gs.integrate(0, args.end_time, dump_freq=args.dump_freq, should_dump=args.should_dump)
+
 
 def create_img_grid(images, text):
     W, H = images[0][0].width, images[0][0].height
@@ -82,54 +88,28 @@ def create_img_grid(images, text):
 
     return grid
 
-def process_function_ga(chromosomes, modified):
+
+def process_function_ga(chromosomes, modified, args):
     while True:
         c = chromosomes.get()
         if c == 'DONE':
             break
         F, k = c.F, c.k
         sim = GrayScott(F=F, kappa=k, movie=False, outdir="./garbage", name=f"{F}_{k}")
-        pattern, latest, image = sim.integrate(0, 2000, dump_freq=100, report=250, should_dump=False, fitness='gradient') 
+        pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=False, fitness=args.fitness) 
         c.set_fitness(latest)
         c.set_pattern(pattern)
         c.set_image(image)
         modified.put(c)
 
     modified.put('DONE')
-    
 
-def run_generation(chromosomes, iter, Nf, Nk, num_iters, args):
-    print(f"GA Iteration {iter} of {num_iters}")
-    for _ in range(args.num_threads):
-        chromosomes.append("DONE")
 
-    q, modified = Queue(), Queue()
-    for c in chromosomes:
-        q.put(c)
-    chromosomes = q
-
-    start = time.time()
-    processes = start_processes(args.num_threads, process_function_ga, (chromosomes, modified))
-    
-    count = 0
-    chromosomes = []
-    while count < args.num_threads:
-        c = modified.get()
-        if c == 'DONE':
-            count+=1
-            continue
-        chromosomes.append(c)
-
-    end_processes(processes)
-    end = time.time()
-    
-    print(f'Generation {iter} time taken {timedelta(seconds=end-start)}')
-
-    chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
-
+def present_chromosomes(chromosomes, iter, args):
+    Nf, Nk = args.Nf, args.Nk
     img_text = [['' for _ in range(Nk)] for _ in range(Nf)]
     images   = [[None for _ in range(Nk)] for _ in range(Nf)]
-    successul_params = []
+    successful_params = []
 
     for i in range(Nf):
         for j in range(Nk):
@@ -139,13 +119,49 @@ def run_generation(chromosomes, iter, Nf, Nk, num_iters, args):
             img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
             images[i][j]   = chromosomes[cur].image
             if c.pattern:
-                successul_params.append((F, k))
-                
+                successful_params.append((F, k))
 
     grid = create_img_grid(images, img_text)
-    grid.save(f'ga_search_iter_{iter}.png')
+    grid.save(f'./results/{args.rd}/{args.fitness}_{Nf}_{Nk}_{args.end_time}_{iter}.png')
 
-    return chromosomes, successul_params 
+    sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
+    if iter == args.num_iters or args.param_search:
+        print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
+        for params in successful_params:
+            print(f"F={params[0]}, k={params[1]}")
+
+def prep_sim(chromosomes, iter, args):
+    if args.param_search:
+        print('Beginning param search')
+    else:
+        print(f"GA Iteration {iter} of {args.num_iters}")
+
+    for _ in range(args.num_processes):
+        chromosomes.append("DONE")
+
+    q, modified = Queue(), Queue()
+    for c in chromosomes:
+        q.put(c)
+    chromosomes = q
+
+    return chromosomes, modified
+
+def run_generation(chromosomes, iter, args):
+    # Prepare process safe queues
+    chromosomes, modified = prep_sim(chromosomes, iter, args)
+
+    # Do the simulations
+    start = time.time()
+    processes = start_processes(args.num_processes, process_function_ga, (chromosomes, modified, args))
+    chromosomes = end_processes(processes, modified, args.num_processes)
+    end = time.time()
+    print(f'Generation {iter} time taken {timedelta(seconds=end-start)}')
+
+    # Save the results
+    chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
+    present_chromosomes(chromosomes, iter, args)
+
+    return chromosomes
 
 def init_chromosomes(args):
     F0, F1, k0, k1 = args.F0, args.F1, args.k0, args.k1
@@ -158,13 +174,13 @@ def init_chromosomes(args):
             F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
             chromosomes.append(Chromosome(F, k))
 
-    return chromosomes, Nf, Nk
+    return chromosomes
 
 
 def resume_ga(args):
-    chromosomes, Nf, Nk = init_chromosomes(args)
+    chromosomes = init_chromosomes(args)
 
-    iter, num_iters = 1, args.num_iters
+    iter, Nf, Nk, num_iters = 1, args.Nf, args.Nk, args.num_iters
     
     if os.path.exists(args.resume_file):
         with open(args.resume_file, 'rb') as file:
@@ -176,47 +192,42 @@ def resume_ga(args):
             # Just making the file for now
             pass
 
-    chromosomes, successul_params = run_generation(chromosomes, iter, Nf, Nk, num_iters, args)
+    chromosomes = run_generation(chromosomes, iter, args)
 
-    if iter < num_iters:
-        with open(args.resume_file, 'wb') as file:
-            pickle.dump((chromosomes, Nf, Nk, iter+1, num_iters), file)
-
-    else:
-        print(f"Genetic algorithm terminated with {len(successul_params)} turing patterns out of {N} chromosomes")
-        for params in successul_params:
-            print(f"F={params[0]}, k={params[1]}")
+    with open(args.resume_file, 'wb') as file:
+        pickle.dump((chromosomes, Nf, Nk, iter+1, num_iters), file)
 
 
 def genetic_algorithm(args):
-    chromosomes, Nf, Nk = init_chromosomes(args)
+    chromosomes = init_chromosomes(args)
 
     num_iters = args.num_iters
-    successul_params = []
 
     for iter in range(num_iters):
-        chromosomes, successul_params = run_generation(chromosomes, iter, Nf, Nk, num_iters, args)
+        chromosomes = run_generation(chromosomes, iter, args)
         chromosomes = apply_fitness_function(chromosomes, 'default')
 
-    print(f"Genetic algorithm terminated with {len(successul_params)} turing patterns out of {N} chromosomes")
-    for params in successul_params:
-        print(f"F={params[0]}, k={params[1]}")
 
 def param_search(args):
-    chromosomes, Nf, Nk = init_chromosomes(args)
-    iter, num_iters = 1, 1
-    chromosomes, successul_params = run_generation(chromosomes, iter, Nf, Nk, num_iters, args)
-    
-    print(f"Paramater terminated with {len(successul_params)} turing patterns out of {N} chromosomes")
-    for params in successul_params:
-        print(f"F={params[0]}, k={params[1]}")
+    chromosomes = init_chromosomes(args)
+    iter = 1
+    chromosomes = run_generation(chromosomes, iter, args)
+
+
+def make_output_dirs(args):
+    dirs = ['garbage', 'results', f'results/{args.rd}']
+    for dir in dirs:
+        if not os.path.exists(dir):
+            os.makedirs(dir)
 
 def main():
     args, _ = parse_args()
 
     print(f'thread count per core: {psutil.cpu_count() // psutil.cpu_count(logical=False)}')
     print(f"Num cores = {psutil.cpu_count(logical=False)}")
-    print('Num_threads =', args.num_threads)
+    print('Num_processes = ', args.num_processes)
+
+    make_output_dirs(args)
 
     if args.demo:
         demo(args)
@@ -228,12 +239,10 @@ def main():
 
     if args.genetic_algorithm:
         resume_ga(args)
-        # genetic_algorithm(args)
+        #genetic_algorithm(args)
         return
 
-    gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir, name=args.name)
-    gs.integrate(0, args.end_time, dump_freq=args.dump_freq, should_dump=args.should_dump)
-
+    print('Sim type not specified')
 
 if __name__ == "__main__":
     main()

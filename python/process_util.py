@@ -9,9 +9,19 @@ def start_processes(num_processes, thread_function, args):
         p.start()
     return processes
 
-def end_processes(processes):
+def end_processes(processes, modified, num_processes):
+    count, chromosomes = 0, []
+    while count < num_processes:
+        c = modified.get()
+        if c == 'DONE':
+            count+=1
+            continue
+        chromosomes.append(c)
+    
     for p in processes:
         p.join()
+
+    return chromosomes
 
 class ProcessSafeIterable:
     def __init__(self, data):
