@@ -24,6 +24,7 @@ from PIL import Image as im
 from PIL import ImageFont
 from PIL import ImageDraw 
 from multiprocessing import Queue
+from datetime import timedelta
 import time
 import psutil
 
@@ -32,6 +33,15 @@ def parse_args():
     Driver arguments.  These are passed to the GrayScott class
     """
     parser = argparse.ArgumentParser()
+
+    parser.add_argument('-Nf', default=20, type=int, help='')
+    parser.add_argument('-Nk', default=10, type=int, help='')
+    parser.add_argument('-F0', default=0.01, type=float, help='')
+    parser.add_argument('-F1', default=0.11, type=float, help='')
+    parser.add_argument('-k0', default=0.04, type=float, help='')
+    parser.add_argument('-k1', default=0.08, type=float, help='')
+    parser.add_argument('-num_iters', default=10, type=int, help='How many generations of ga to run.')
+
     parser.add_argument('-F', '--feed_rate', default=0.04, type=float, help='Feed rate F')
     parser.add_argument('-k', '--death_rate', default=0.06, type=float, help='Death rate kappa')
     parser.add_argument('-T', '--end_time', default=3500, type=float, help='Final time')
@@ -53,16 +63,6 @@ def demo(args):
     Reproduces the example at https://www.chebfun.org/examples/pde/GrayScott.html
     Pass the --demo option to the driver to run this demo.
     """
-
-    # 1. Rolls
-    # rolls = GrayScott(F=0.04, kappa=0.06, movie=True, outdir="demo_rolls")
-    # rolls.integrate(0, 3500, dump_freq=args.dump_freq)
-
-    # # 2. Spots
-    # spots = GrayScott(F=0.025, kappa=0.06, movie=True, outdir="demo_spots")
-    # spots.integrate(0, 3500, dump_freq=args.dump_freq)
-
-    # 1. Rolls
     rolls = GrayScott(F=0.04, kappa=0.06, movie=False, outdir=".", name="Rolls")
     rolls.integrate(0, 3500, dump_freq=args.dump_freq, should_dump=True)
 
@@ -82,72 +82,13 @@ def create_img_grid(images, text):
 
     return grid
 
-def param_search_t(args):
-    """
-    Searchers the space of parameters for Turing patterns
-    """
-    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 2, 2   # We'll have Nf * Nk simulations
-    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
-
-    successul_params = []
-    images = [[None for _ in range(Nk)] for _ in range(Nf)]
-    param_seeds = [(i, j) for i in range(Nf) for j in range(Nk)]
-    param_seeds = ThreadSafeIterable(param_seeds)
-
-    def thread_function(param_seeds, successful_params):
-        param_seed = param_seeds.next()
-        while param_seed is not None:
-            i, j = param_seed
-
-            F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
-            print(f"Beginning sim: F={F}, k={k}")
-
-            sim = GrayScott(F=F, kappa=k, movie=False, outdir="./garbage", name=f"{F}_{k}")
-            pattern, _, image = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False)
-            images[i][j] = image
-            if pattern:
-                successful_params.append((F, k))
-
-            param_seed = param_seeds.next()
-
-    start = time.time()
-    run_threads(args.num_threads, thread_function, (param_seeds, successul_params))
-    num_successes = len(successul_params)
-    end = time.time()
-    print(f'Threading time taken {start-end}')
-
-    img_text = [[f'F={round(F0 + i * df, 3)}, K={round(k0 + j * dk, 3)}' for j in range(Nk)] for i in range(Nf)]
-    grid = create_img_grid(images, img_text)
-
-    grid.save('param_search.png')
-    print(f"Param search terminated with {num_successes} turing patterns")
-    for params in successul_params:
-        print(f"F={params[0]}, k={params[1]}")
-
-def process_function_param_search(param_seeds, images, successful_params):
-    while True:
-        i, j, F, k = param_seeds.get()
-        if i == "DONE":
-            break
-
-        print(f"Beginning sim: F={F}, k={k}")
-
-        sim = GrayScott(F=F, kappa=k, movie=False, outdir="./garbage", name=f"{F}_{k}")
-        pattern, _, image = sim.integrate(0, 2000, dump_freq=100, report=250, should_dump=False)
-        images.put((i, j, image))
-
-        print(f"Done with sim F={F}, k={k}")
-
-    images.put(('DONE', None, None))
-
 def process_function_ga(chromosomes, modified):
     while True:
         c = chromosomes.get()
         if c == 'DONE':
             break
         F, k = c.F, c.k
-        sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
+        sim = GrayScott(F=F, kappa=k, movie=False, outdir="./garbage", name=f"{F}_{k}")
         pattern, latest, image = sim.integrate(0, 2000, dump_freq=100, report=250, should_dump=False, fitness='gradient') 
         c.set_fitness(latest)
         c.set_pattern(pattern)
@@ -156,119 +97,6 @@ def process_function_ga(chromosomes, modified):
 
     modified.put('DONE')
     
-def param_search(args):
-    """
-    Searchers the space of parameters for Turing patterns
-    """
-    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 20, 10   # We'll have Nf * Nk simulations
-    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
-
-    successul_params = []
-    images = [[None for _ in range(Nk)] for _ in range(Nf)]
-    image_queue = Queue()
-    param_seeds = [(i, j, round(F0 + i * df, 3), round(k0 + j * dk, 3)) for i in range(Nf) for j in range(Nk)]
-    for _ in range(args.num_threads):
-        param_seeds.append(("DONE", None, None, None))
-
-    q = Queue()
-    for param in param_seeds:
-        q.put(param)
-
-    param_seeds = q
-
-    start = time.time()
-    processes = start_processes(args.num_threads, process_function, (param_seeds, image_queue, successul_params))
-    num_successes = len(successul_params)
-
-    img_text = [[f'F={round(F0 + i * df, 3)}, K={round(k0 + j * dk, 3)}' for j in range(Nk)] for i in range(Nf)]
-
-    count = 0
-    while count < args.num_threads:
-        i, j, image = image_queue.get()
-        if i == 'DONE':
-            count+=1
-            print(i)
-            continue
-        images[i][j] = image
-        print(i,j)
-
-    end_processes(processes)
-    end = time.time()
-    print(f'Processes time taken {start-end}')
-
-    grid = create_img_grid(images, img_text)
-    grid.save('param_search.png')
-    print(f"Param search terminated with {num_successes} turing patterns")
-    for params in successul_params:
-        print(f"F={params[0]}, k={params[1]}")
-
-def genetic_algorithm_t(args):
-    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 10, 5   # We'll have Nf * Nk chromosomes
-    N = Nf * Nk
-    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
-
-    chromosomes = []
-    for i in range(Nf):
-        for j in range(Nk):
-            F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
-            chromosomes.append(Chromosome(F, k))
-
-    num_successes = 0
-    successul_params = []
-    num_iters = 15
-
-    for iter in range(num_iters):
-        print(f"GA Iteration {iter+1} of {num_iters}")
-        chromosomes = ThreadSafeIterable(chromosomes)
-
-        def thread_function(chromosomes):
-            c = chromosomes.next()
-            while c is not None:
-                F, k = c.F, c.k
-                sim = GrayScott(F=F, kappa=k, movie=False, outdir=".", name=f"{F}_{k}")
-                pattern, latest, image = sim.integrate(0, 2000, dump_freq=args.dump_freq, report=250, should_dump=False) 
-                c.set_fitness(latest)
-                c.set_pattern(pattern)
-                c.set_image(image)
-
-                c = chromosomes.next()
-
-        run_threads(args.num_threads, thread_function, (chromosomes,))
-        chromosomes = chromosomes.get_data()
-
-        chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
-
-        img_text = [['' for _ in range(Nk)] for _ in range(Nf)]
-        images   = [[None for _ in range(Nk)] for _ in range(Nf)]
-
-        num_successes = 0
-        successul_params = []
-
-        for i in range(Nf):
-            for j in range(Nk):
-                cur = Nk*i+j
-                c = chromosomes[cur]
-                F, k = round(c.F, 4), round(c.k, 4) 
-                img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
-                images[i][j]   = chromosomes[cur].image
-                if c.pattern:
-                    num_successes += 1
-                    successul_params.append((F, k))
-                    
-
-        grid = create_img_grid(images, img_text)
-        grid.save(f'ga_search_iter_{iter}.png')
-
-        # Fitness function
-        chromosomes = apply_fitness_function(chromosomes, 'default')
-        
-
-
-    print(f"Genetic algorithm terminated with {num_successes} turing patterns out of {N} chromosomes")
-    for params in successul_params:
-        print(f"F={params[0]}, k={params[1]}")
 
 def run_generation(chromosomes, iter, Nf, Nk, num_iters, args):
     print(f"GA Iteration {iter} of {num_iters}")
@@ -294,7 +122,8 @@ def run_generation(chromosomes, iter, Nf, Nk, num_iters, args):
 
     end_processes(processes)
     end = time.time()
-    print(f'Generation {iter} time taken {start-end}')
+    
+    print(f'Generation {iter} time taken {timedelta(seconds=end-start)}')
 
     chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
 
@@ -318,18 +147,25 @@ def run_generation(chromosomes, iter, Nf, Nk, num_iters, args):
 
     return chromosomes, successul_params 
 
-def resume_ga(args):
-    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 2, 2   # We'll have Nf * Nk chromosomes
-    N = Nf * Nk
+def init_chromosomes(args):
+    F0, F1, k0, k1 = args.F0, args.F1, args.k0, args.k1
+    Nf, Nk = args.Nf, args.Nk  # We'll have Nf * Nk chromosomes
     df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
 
-    chromosomes, iter, num_iters = [], 1, 3
+    chromosomes = []
     for i in range(Nf):
         for j in range(Nk):
             F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
             chromosomes.append(Chromosome(F, k))
 
+    return chromosomes, Nf, Nk
+
+
+def resume_ga(args):
+    chromosomes, Nf, Nk = init_chromosomes(args)
+
+    iter, num_iters = 1, args.num_iters
+    
     if os.path.exists(args.resume_file):
         with open(args.resume_file, 'rb') as file:
             chromosomes, Nf, Nk, iter, num_iters = pickle.load(file)
@@ -351,35 +187,29 @@ def resume_ga(args):
         for params in successul_params:
             print(f"F={params[0]}, k={params[1]}")
 
-    
 
 def genetic_algorithm(args):
-    F0, F1, k0, k1 = 0.01, .11, 0.04, .08
-    Nf, Nk = 10, 10   # We'll have Nf * Nk chromosomes
-    N = Nf * Nk
-    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
+    chromosomes, Nf, Nk = init_chromosomes(args)
 
-    chromosomes = []
-    for i in range(Nf):
-        for j in range(Nk):
-            F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
-            chromosomes.append(Chromosome(F, k))
-    for _ in range(args.num_threads):
-        chromosomes.append("DONE")
-
-    num_iters = 10
+    num_iters = args.num_iters
     successul_params = []
 
     for iter in range(num_iters):
-        chromosomes, successul_params = run_generation(chromosomes,iter, Nf, Nk, num_iters, args)
+        chromosomes, successul_params = run_generation(chromosomes, iter, Nf, Nk, num_iters, args)
         chromosomes = apply_fitness_function(chromosomes, 'default')
-
 
     print(f"Genetic algorithm terminated with {len(successul_params)} turing patterns out of {N} chromosomes")
     for params in successul_params:
         print(f"F={params[0]}, k={params[1]}")
 
-
+def param_search(args):
+    chromosomes, Nf, Nk = init_chromosomes(args)
+    iter, num_iters = 1, 1
+    chromosomes, successul_params = run_generation(chromosomes, iter, Nf, Nk, num_iters, args)
+    
+    print(f"Paramater terminated with {len(successul_params)} turing patterns out of {N} chromosomes")
+    for params in successul_params:
+        print(f"F={params[0]}, k={params[1]}")
 
 def main():
     args, _ = parse_args()
