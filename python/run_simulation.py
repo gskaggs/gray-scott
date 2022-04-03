@@ -105,7 +105,7 @@ def process_function_ga(chromosomes, modified, args):
     modified.put('DONE')
 
 
-def present_chromosomes(chromosomes, iter, args):
+def present_chromosomes(chromosomes, cur_iter, args):
     Nf, Nk = args.Nf, args.Nk
     img_text = [['' for _ in range(Nk)] for _ in range(Nf)]
     images   = [[None for _ in range(Nk)] for _ in range(Nf)]
@@ -122,19 +122,19 @@ def present_chromosomes(chromosomes, iter, args):
                 successful_params.append((F, k))
 
     grid = create_img_grid(images, img_text)
-    grid.save(f'./results/{args.rd}/{args.fitness}_{Nf}_{Nk}_{args.end_time}_{iter}.png')
+    grid.save(f'./results/{args.rd}/{args.fitness}_{Nf}_{Nk}_{args.end_time}_{cur_iter}.png')
 
     sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
-    if iter == args.num_iters or args.param_search:
+    if cur_iter == args.num_iters or args.param_search:
         print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
         for params in successful_params:
             print(f"F={params[0]}, k={params[1]}")
 
-def prep_sim(chromosomes, iter, args):
+def prep_sim(chromosomes, cur_iter, args):
     if args.param_search:
         print('Beginning param search')
     else:
-        print(f"GA Iteration {iter} of {args.num_iters}")
+        print(f"GA Iteration {cur_iter} of {args.num_iters}")
 
     for _ in range(args.num_processes):
         chromosomes.append("DONE")
@@ -146,20 +146,20 @@ def prep_sim(chromosomes, iter, args):
 
     return chromosomes, modified
 
-def run_generation(chromosomes, iter, args):
+def run_generation(chromosomes, cur_iter, args):
     # Prepare process safe queues
-    chromosomes, modified = prep_sim(chromosomes, iter, args)
+    chromosomes, modified = prep_sim(chromosomes, cur_iter, args)
 
     # Do the simulations
     start = time.time()
     processes = start_processes(args.num_processes, process_function_ga, (chromosomes, modified, args))
     chromosomes = end_processes(processes, modified, args.num_processes)
     end = time.time()
-    print(f'Generation {iter} time taken {timedelta(seconds=end-start)}')
+    print(f'Generation {cur_iter} time taken {timedelta(seconds=end-start)}')
 
     # Save the results
     chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
-    present_chromosomes(chromosomes, iter, args)
+    present_chromosomes(chromosomes, cur_iter, args)
 
     return chromosomes
 
@@ -180,11 +180,11 @@ def init_chromosomes(args):
 def resume_ga(args):
     chromosomes = init_chromosomes(args)
 
-    iter, Nf, Nk, num_iters = 1, args.Nf, args.Nk, args.num_iters
+    cur_iter, Nf, Nk, num_iters = 1, args.Nf, args.Nk, args.num_iters
     
     if os.path.exists(args.resume_file):
         with open(args.resume_file, 'rb') as file:
-            chromosomes, Nf, Nk, iter, num_iters = pickle.load(file)
+            chromosomes, Nf, Nk, cur_iter, num_iters = pickle.load(file)
             chromosomes = apply_fitness_function(chromosomes, 'user_input')
 
     else:
@@ -192,10 +192,10 @@ def resume_ga(args):
             # Just making the file for now
             pass
 
-    chromosomes = run_generation(chromosomes, iter, args)
+    chromosomes = run_generation(chromosomes, cur_iter, args)
 
     with open(args.resume_file, 'wb') as file:
-        pickle.dump((chromosomes, Nf, Nk, iter+1, num_iters), file)
+        pickle.dump((chromosomes, Nf, Nk, cur_iter+1, num_iters), file)
 
 
 def genetic_algorithm(args):
@@ -203,15 +203,15 @@ def genetic_algorithm(args):
 
     num_iters = args.num_iters
 
-    for iter in range(num_iters):
-        chromosomes = run_generation(chromosomes, iter, args)
+    for cur_iter in range(num_iters):
+        chromosomes = run_generation(chromosomes, cur_iter, args)
         chromosomes = apply_fitness_function(chromosomes, 'default')
 
 
 def param_search(args):
     chromosomes = init_chromosomes(args)
-    iter = 1
-    chromosomes = run_generation(chromosomes, iter, args)
+    cur_iter = 1
+    chromosomes = run_generation(chromosomes, cur_iter, args)
 
 
 def make_output_dirs(args):
