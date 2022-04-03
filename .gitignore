@@ -5,4 +5,6 @@ demo*
 *.png
 *.html
 python/dump.txt
+python/garbage
+python/results
 *.pkl
