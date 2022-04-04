@@ -237,9 +237,12 @@ def main():
         param_search(args)
         return
 
-    if args.genetic_algorithm:
+    if args.genetic_algorithm and args.fitness == 'user':
         resume_ga(args)
-        #genetic_algorithm(args)
+        return
+
+    if args.genetic_algorithm:
+        genetic_algorithm(args)
         return
 
     print('Sim type not specified')
