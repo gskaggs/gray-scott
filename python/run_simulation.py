@@ -3,6 +3,7 @@
 # Created    : Sat Jan 30 2021 09:13:51 PM (+0100)
 # Description: Gray-Scott driver.  Use the --help argument for all options
 # Copyright 2021 ETH Zurich. All Rights Reserved.
+from fileinput import filename
 import threading
 import matplotlib
 matplotlib.use('Agg')
@@ -121,15 +122,22 @@ def present_chromosomes(chromosomes, cur_iter, args):
             if c.pattern:
                 successful_params.append((F, k))
 
-    grid = create_img_grid(images, img_text)
-    sim_type = 'param_search' if args.param_search else args.fitness
-    grid.save(f'./results/{args.rd}/{sim_type}_{Nf}_{Nk}_{args.end_time}_{cur_iter}.png')
-
     sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
     if cur_iter == args.num_iters or args.param_search:
         print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
         for params in successful_params:
             print(f"F={params[0]}, k={params[1]}")
+
+    grid = create_img_grid(images, img_text)
+    sim_type = 'param_search' if args.param_search else args.fitness
+    sim_id = f'./results/{args.rd}/{sim_type}_{Nf}_{Nk}_{args.end_time}_{cur_iter}'
+    img_file, param_file = sim_id + '.png', sim_id + '.pkl'
+
+    print('Saving simulation image at', img_file)
+    grid.save(f'./results/{args.rd}/{sim_type}_{Nf}_{Nk}_{args.end_time}_{cur_iter}.png')
+
+    with open(param_file, 'wb') as file:
+        pickle.dump((chromosomes, cur_iter, args), file)
 
 def prep_sim(chromosomes, cur_iter, args):
     if args.param_search:
