@@ -116,7 +116,6 @@ class GrayScott:
             pattern: is True if simulation terminates
                      in a Turing pattern
         """
-        print(f'Beginning simulation with F {self.F} and k {self.kappa}')
         t = t0
         s = 0
         latest = 0
@@ -136,7 +135,7 @@ class GrayScott:
 
         pattern = self._check_pattern()
         image = self._dump(s, t)
-        print(self.F, self.kappa)
+        
         if fitness=='dirichlet':
             latest = self._dirichlet()
 
