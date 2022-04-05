@@ -115,14 +115,15 @@ def present_chromosomes(chromosomes, cur_iter, args):
         for j in range(Nk):
             cur = Nk*i+j
             c = chromosomes[cur]
-            F, k = round(c.F, 4), round(c.k, 4) 
-            img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
+            F, k, fitness = round(c.F, 4), round(c.k, 4), round(c.fitness, 2)
+            img_text[i][j] = f'#{cur+1}: F={F}, K={k}, Fit={fitness}'
             images[i][j]   = chromosomes[cur].image
             if c.pattern:
                 successful_params.append((F, k))
 
     grid = create_img_grid(images, img_text)
-    grid.save(f'./results/{args.rd}/{args.fitness}_{Nf}_{Nk}_{args.end_time}_{cur_iter}.png')
+    sim_type = 'param_search' if args.param_search else args.fitness
+    grid.save(f'./results/{args.rd}/{sim_type}_{Nf}_{Nk}_{args.end_time}_{cur_iter}.png')
 
     sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
     if cur_iter == args.num_iters or args.param_search:
@@ -203,7 +204,7 @@ def genetic_algorithm(args):
 
     num_iters = args.num_iters
 
-    for cur_iter in range(num_iters):
+    for cur_iter in range(1, num_iters+1):
         chromosomes = run_generation(chromosomes, cur_iter, args)
         chromosomes = apply_fitness_function(chromosomes, 'default')
 
@@ -225,7 +226,7 @@ def main():
 
     print(f'thread count per core: {psutil.cpu_count() // psutil.cpu_count(logical=False)}')
     print(f"Num cores = {psutil.cpu_count(logical=False)}")
-    print('Num_processes = ', args.num_processes)
+    print(f'Num_processes = {args.num_processes}')
 
     make_output_dirs(args)
 

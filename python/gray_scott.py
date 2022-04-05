@@ -136,14 +136,9 @@ class GrayScott:
 
         pattern = self._check_pattern()
         image = self._dump(s, t)
-
+        print(self.F, self.kappa)
         if fitness=='dirichlet':
             latest = self._dirichlet()
-        
-        # if self.movie:
-        #     self._render_frames()
-
-        # print('\n')
 
         return pattern, latest, image
 
@@ -174,7 +169,8 @@ class GrayScott:
         Computes a proxy for the Dirichlet energy of v.
         This is used as a heuristic for how complex the pattern is.
         '''
-        grad = np.gradient(self.v[1:-1, 1:-1])
+        v_view = self.v[1:-1, 1:-1]
+        grad = np.gradient(v_view / np.max(v_view))
         grad = [l**2 for l in grad]
         return sum(sum(sum(grad)))
 
@@ -242,7 +238,11 @@ class GrayScott:
             both: if true, dump contours for both species U and V
         """
         V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)
-        image = im.fromarray(V)      
+        grad = [l**2 for l in np.gradient(self.v[1:-1, 1:-1])]
+        grad = grad[0] + grad[1]
+        grad = 255 * grad / np.max(grad)
+        grad = grad.astype(np.uint8)
+        image = im.fromarray(np.append(V, grad, 1))      
         if save: 
            image.save(os.path.join(self.outdir, self.name + f"_frame_{self.dump_count:06d}.png"))
         return image
