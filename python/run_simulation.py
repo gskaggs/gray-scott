@@ -21,6 +21,7 @@ from thread_util import ThreadSafeIterable
 from process_util import start_processes
 from process_util import ProcessSafeIterable
 from process_util import end_processes
+from print_args import load_args
 from PIL import Image as im
 from PIL import ImageFont
 from PIL import ImageDraw 
@@ -41,7 +42,7 @@ def parse_args():
     parser.add_argument('-F1', default=0.11, type=float, help='')
     parser.add_argument('-k0', default=0.04, type=float, help='')
     parser.add_argument('-k1', default=0.08, type=float, help='')
-    parser.add_argument('-num_iters', default=10, type=int, help='How many generations of ga to run.')
+    parser.add_argument('-num_iters', default=1, type=int, help='How many generations of ga to run.')
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
     parser.add_argument('-rd', default='gray-scott', type=str, help='The kind of reaction diffussion equation to use.')
 
@@ -52,6 +53,7 @@ def parse_args():
     parser.add_argument('--demo', action='store_true', help='Run demo (https://www.chebfun.org/examples/pde/GrayScott.html)')
     parser.add_argument('--param_search', action='store_true', help='Run param search')
     parser.add_argument('--resume_file', default='resume.pkl', type=str, help='Where intermediate program values should be stored for genetic algorithm')
+    parser.add_argument('--resume', action='store_true', help='Restart a simulation with a given setup stored in --resume_file')
     parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
     parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
@@ -223,6 +225,19 @@ def param_search(args):
     chromosomes = run_generation(chromosomes, cur_iter, args)
 
 
+def resume_sim(args):
+    chromosomes, cur_iter, args = load_args(args.resume_file)
+
+    if args.param_search:
+        param_search(args)
+        return
+
+    while cur_iter <= args.num_iters:
+        chromosomes = run_generation(chromosomes, cur_iter, args)
+        chromosomes = apply_fitness_function(chromosomes, 'default')
+        cur_iter += 1
+
+
 def make_output_dirs(args):
     dirs = ['garbage', 'results', f'results/{args.rd}']
     for dir in dirs:
@@ -240,6 +255,10 @@ def main():
 
     if args.demo:
         demo(args)
+        return
+
+    if args.resume:
+        resume_sim(args)
         return
 
     if args.param_search:
