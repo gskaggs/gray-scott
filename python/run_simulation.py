@@ -57,7 +57,8 @@ def parse_args():
     parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
     parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
-    parser.add_argument('--should_dump', action='store_true', default=True, help='Actually create png files during simulation')
+    parser.add_argument('--should_dump', action='store_true', default=False, help='Actually create png files during simulation')
+    parser.add_argument('--dirichlet_vis', action='store_true', default=False, help='Visualize gradient side by side with sims')
     parser.add_argument('--name', default='', type=str, help='Name of the simulation, used to save the results')
     parser.add_argument('-t', '--num_processes', default=6, type=int, help='Number of threads for the simulation')
     return parser.parse_known_args()
@@ -99,7 +100,7 @@ def process_function_ga(chromosomes, modified, args):
             break
         F, k = c.F, c.k
         sim = GrayScott(F=F, kappa=k, movie=False, outdir="./garbage", name=f"{F}_{k}")
-        pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=False, fitness=args.fitness) 
+        pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=args.should_dump, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
         c.set_fitness(latest)
         c.set_pattern(pattern)
         c.set_image(image)
@@ -119,7 +120,9 @@ def present_chromosomes(chromosomes, cur_iter, args):
             cur = Nk*i+j
             c = chromosomes[cur]
             F, k, fitness = round(c.F, 4), round(c.k, 4), round(c.fitness, 2)
-            img_text[i][j] = f'#{cur+1}: F={F}, K={k}, Fit={fitness}'
+            img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
+            if args.dirichlet_vis:
+                img_text[i][j] = img_text[i][j] + f', Fit={fitness}'
             images[i][j]   = chromosomes[cur].image
             if c.pattern:
                 successful_params.append((F, k))

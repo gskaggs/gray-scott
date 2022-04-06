@@ -102,7 +102,7 @@ class GrayScott:
         self.update_ghosts(self.u)
         self.update_ghosts(self.v)
 
-    def integrate(self, t0, t1, *, dump_freq=100, report=50, should_dump=False, fitness='pattern'):
+    def integrate(self, t0, t1, *, dump_freq=100, report=50, dirichlet_vis=False, should_dump=False, fitness='pattern'):
         """
         Integrate system.
 
@@ -120,10 +120,8 @@ class GrayScott:
         s = 0
         latest = 0
         while t < t1:
-            # if should_dump and s % dump_freq == 0:
-            #     self._dump(s, t)
-            # if s % report == 0:
-            #     print(f"step={s}; time={t:e}")
+            if should_dump and s % dump_freq == 0:
+                self._dump(s, t)
             t = self.update(time=t)
             if (t1 - t) < self.dt:
                 self.dt = t1 - t
@@ -134,7 +132,7 @@ class GrayScott:
             
 
         pattern = self._check_pattern()
-        image = self._dump(s, t)
+        image = self._dump(s, t, dirichlet_vis)
         
         if fitness=='dirichlet':
             latest = self._dirichlet()
@@ -227,7 +225,7 @@ class GrayScott:
         v_view += 0.5 * self.dt * (v_rhs1 + v_rhs2)
 
 
-    def _dump(self, step, time, *, both=False, save=False):
+    def _dump(self, step, time, dirichlet_vis=False, *, both=False, save=False):
         """
         Dump snapshot
 
@@ -241,7 +239,10 @@ class GrayScott:
         grad = grad[0] + grad[1]
         grad = 255 * grad / np.max(grad)
         grad = grad.astype(np.uint8)
-        image = im.fromarray(np.append(V, grad, 1))      
+        if dirichlet_vis:
+            image = im.fromarray(np.append(V, grad, 1))      
+        else:
+            image = im.fromarray(V)    
         if save: 
            image.save(os.path.join(self.outdir, self.name + f"_frame_{self.dump_count:06d}.png"))
         return image
