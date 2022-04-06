@@ -128,7 +128,8 @@ def present_chromosomes(chromosomes, cur_iter, args):
                 successful_params.append((F, k))
 
     sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
-    if cur_iter == args.num_iters or args.param_search:
+    last_gen = cur_iter == args.num_iters or args.param_search
+    if last_gen:
         print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
         for params in successful_params:
             print(f"F={params[0]}, k={params[1]}")
@@ -137,6 +138,12 @@ def present_chromosomes(chromosomes, cur_iter, args):
     sim_type = 'param_search' if args.param_search else args.fitness
     sim_id = f'./results/{args.rd}/{sim_type}_{Nf}_{Nk}_{args.end_time}_{cur_iter}'
     img_file, param_file = sim_id + '.png', sim_id + '.pkl'
+
+    if last_gen:
+        try:
+            grid.show()
+        except:
+            pass
 
     print('Saving simulation image at', img_file)
     grid.save(f'./results/{args.rd}/{sim_type}_{Nf}_{Nk}_{args.end_time}_{cur_iter}.png')
