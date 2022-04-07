@@ -99,7 +99,7 @@ def process_function_ga(chromosomes, modified, args):
         if c == 'DONE':
             break
         F, k = c.F, c.k
-        sim = GrayScott(F=F, kappa=k, movie=False, outdir="./garbage", name=f"{F}_{k}")
+        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage", name=f"{F}_{k}")
         pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=args.should_dump, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
         c.set_fitness(latest)
         c.set_pattern(pattern)
@@ -193,7 +193,7 @@ def init_chromosomes(args):
     for i in range(Nf):
         for j in range(Nk):
             F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
-            chromosomes.append(Chromosome(F, k))
+            chromosomes.append(Chromosome([F, k]))
 
     return chromosomes
 

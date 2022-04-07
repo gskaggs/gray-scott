@@ -1,17 +1,16 @@
 import numpy as np
 
 class Chromosome:
-    def __init__(self, F, k):
-        self._F = F
-        self._k = k
+    def __init__(self, rd_params):
+        self.rd_params = rd_params
 
     @property 
     def F(self):
-        return self._F
+        return self.rd_params[0]
 
     @property
     def k(self):
-        return self._k
+        return self.rd_params[1]
 
     @property
     def fitness(self):
@@ -26,8 +25,8 @@ class Chromosome:
         return self._pattern
 
     def mutate(self):
-        self._F += np.random.normal(0, .001)
-        self._k += np.random.normal(0, .001)
+        for i in range(len(self.rd_params)):
+            self.rd_params[i] +=  np.random.normal(0, .001)
 
     def set_pattern(self, pattern):
         self._pattern = pattern
@@ -43,7 +42,7 @@ class Chromosome:
         
         F = other.F if loc == 0 else self.F
         k = self.k if loc == 2 else other.k
-        result = Chromosome(F, k)
+        result = Chromosome([F, k])
         result.mutate()
 
         return result

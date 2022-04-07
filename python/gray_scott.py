@@ -21,8 +21,7 @@ class GrayScott:
 
     def __init__(self,
                  *,
-                 F=0.04,
-                 kappa=0.06,
+                 chromosome,
                  Du=2.0e-5,
                  Dv=1.0e-5,
                  x0=-1,
@@ -40,7 +39,7 @@ class GrayScott:
 
         Arguments
             F: parameter F in governing equations
-            kappa: parameter kappa (k) in governing equations
+            k: parameter k (k) in governing equations
             Du: diffusivity of species U
             Dv: diffusivity of species V
             x0: left domain coordinate
@@ -54,8 +53,8 @@ class GrayScott:
             outdir: output directory
         """
         # parameter
-        self.F = F
-        self.kappa = kappa
+        self.F = chromosome.F
+        self.k = chromosome.k
 
         Nnodes = N + 1
         self.Fo = Fo
@@ -195,7 +194,7 @@ class GrayScott:
         # advance state (Euler step)
         uv2 = u_view * np.power(v_view, 2)
         u_view += self.dt * (self.fa * self.laplacian(self.u) - uv2 + self.F * (1 - u_view))
-        v_view += self.dt * (self.fs * self.laplacian(self.v) + uv2 - (self.F + self.kappa) * v_view)
+        v_view += self.dt * (self.fs * self.laplacian(self.v) + uv2 - (self.F + self.k) * v_view)
 
 
     def _heun(self):
@@ -211,7 +210,7 @@ class GrayScott:
         # 1st stage
         uv2 = u_view * v_view**2
         u_rhs1 = self.fa * self.laplacian(self.u) - uv2 + self.F * (1 - u_view)
-        v_rhs1 = self.fs * self.laplacian(self.v) + uv2 - (self.F + self.kappa) * v_view
+        v_rhs1 = self.fs * self.laplacian(self.v) + uv2 - (self.F + self.k) * v_view
         u_vtmp = u_view + self.dt * u_rhs1
         v_vtmp = v_view + self.dt * v_rhs1
         self.update_ghosts(self.u_tmp)
@@ -220,7 +219,7 @@ class GrayScott:
         # 2nd stage
         uv2 = u_vtmp * v_vtmp**2
         u_rhs2 = self.fa * self.laplacian(self.u_tmp) - uv2 + self.F * (1 - u_vtmp)
-        v_rhs2 = self.fs * self.laplacian(self.v_tmp) + uv2 - (self.F + self.kappa) * v_vtmp
+        v_rhs2 = self.fs * self.laplacian(self.v_tmp) + uv2 - (self.F + self.k) * v_vtmp
         u_view += 0.5 * self.dt * (u_rhs1 + u_rhs2)
         v_view += 0.5 * self.dt * (v_rhs1 + v_rhs2)
 
