@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 run_simulation.py --param_search -t 6 -T 100 -Nf 2 -Nk 2 -F0 0.01 -k0 0.04 --dirichlet_vis
+python3 run_simulation.py --param_search -t 6 -T 100 -F .04 .06 2 -k .04 .06 2 --dirichlet_vis

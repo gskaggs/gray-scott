@@ -2,15 +2,12 @@ import numpy as np
 
 class Chromosome:
     def __init__(self, rd_params):
-        self.rd_params = rd_params
+        self._rd_params = rd_params
+        self.F = self.get_param('F')
+        self.k = self.get_param('k')
 
-    @property 
-    def F(self):
-        return self.rd_params[0]
-
-    @property
-    def k(self):
-        return self.rd_params[1]
+    def get_param(self, param_name):
+        return self._rd_params.get(param_name, 0)
 
     @property
     def fitness(self):

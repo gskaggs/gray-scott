@@ -3,6 +3,7 @@
 # Created    : Sat Jan 30 2021 09:13:51 PM (+0100)
 # Description: Gray-Scott driver.  Use the --help argument for all options
 # Copyright 2021 ETH Zurich. All Rights Reserved.
+from email.policy import default
 from fileinput import filename
 import threading
 import matplotlib
@@ -11,6 +12,8 @@ matplotlib.use('Agg')
 import argparse
 import pickle
 import os
+import itertools
+import numpy as np
 
 # the file gray_scott.py must be in the PYTHONPATH or in the current directory
 from gray_scott import GrayScott
@@ -30,24 +33,21 @@ from datetime import timedelta
 import time
 import psutil
 
+param_names = ['F', 'k', 'p_a', 'p_a0', 'u_a', 'p_h', 'p_h0', 'u_h']
+
 def parse_args():
     """
     Driver arguments.  These are passed to the GrayScott class
     """
     parser = argparse.ArgumentParser()
+    global param_names
+    for name in param_names:
+        parser.add_argument('-' + name, default=[0.4, 0.6, 1], type=float, nargs='+')
 
-    parser.add_argument('-Nf', default=20, type=int, help='')
-    parser.add_argument('-Nk', default=10, type=int, help='')
-    parser.add_argument('-F0', default=0.01, type=float, help='')
-    parser.add_argument('-F1', default=0.11, type=float, help='')
-    parser.add_argument('-k0', default=0.04, type=float, help='')
-    parser.add_argument('-k1', default=0.08, type=float, help='')
     parser.add_argument('-num_iters', default=1, type=int, help='How many generations of ga to run.')
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
     parser.add_argument('-rd', default='gray-scott', type=str, help='The kind of reaction diffussion equation to use.')
 
-    parser.add_argument('-F', '--feed_rate', default=0.04, type=float, help='Feed rate F')
-    parser.add_argument('-k', '--death_rate', default=0.06, type=float, help='Death rate kappa')
     parser.add_argument('-T', '--end_time', default=3500, type=float, help='Final time')
     parser.add_argument('-d', '--dump_freq', default=100, type=int, help='Dump frequency (integration steps)')
     parser.add_argument('--demo', action='store_true', help='Run demo (https://www.chebfun.org/examples/pde/GrayScott.html)')
@@ -98,8 +98,8 @@ def process_function_ga(chromosomes, modified, args):
         c = chromosomes.get()
         if c == 'DONE':
             break
-        F, k = c.F, c.k
-        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage", name=f"{F}_{k}")
+
+        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage")
         pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=args.should_dump, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
         c.set_fitness(latest)
         c.set_pattern(pattern)
@@ -110,7 +110,7 @@ def process_function_ga(chromosomes, modified, args):
 
 
 def present_chromosomes(chromosomes, cur_iter, args):
-    Nf, Nk = args.Nf, args.Nk
+    Nf, Nk = 2, 2
     img_text = [['' for _ in range(Nk)] for _ in range(Nf)]
     images   = [[None for _ in range(Nk)] for _ in range(Nf)]
     successful_params = []
@@ -185,15 +185,22 @@ def run_generation(chromosomes, cur_iter, args):
     return chromosomes
 
 def init_chromosomes(args):
-    F0, F1, k0, k1 = args.F0, args.F1, args.k0, args.k1
-    Nf, Nk = args.Nf, args.Nk  # We'll have Nf * Nk chromosomes
-    df, dk = (F1 - F0) / Nf, (k1 - k0) / Nk
+    param_bounds = [args.F, args.k, args.p_a, args.p_a0, args.u_a, args.p_h, args.p_h0, args.u_h]
+    
+    for bounds in param_bounds:
+        bounds[2] = int(bounds[2])
+
+    param_bounds = [np.linspace(*bounds) for bounds in param_bounds]
 
     chromosomes = []
-    for i in range(Nf):
-        for j in range(Nk):
-            F, k = round(F0 + i * df, 3), round(k0 + j * dk, 3)
-            chromosomes.append(Chromosome([F, k]))
+
+    global param_names
+
+    for param_combo in itertools.product(*param_bounds):
+        rd_params = {}
+        for i in range(len(param_names)):
+            rd_params[param_names[i]] = param_combo[i] 
+        chromosomes.append(Chromosome(rd_params))
 
     return chromosomes
 
@@ -201,11 +208,11 @@ def init_chromosomes(args):
 def resume_ga(args):
     chromosomes = init_chromosomes(args)
 
-    cur_iter, Nf, Nk, num_iters = 1, args.Nf, args.Nk, args.num_iters
+    cur_iter, num_iters = 1, args.num_iters
     
     if os.path.exists(args.resume_file):
         with open(args.resume_file, 'rb') as file:
-            chromosomes, Nf, Nk, cur_iter, num_iters = pickle.load(file)
+            chromosomes, cur_iter, num_iters = pickle.load(file)
             chromosomes = apply_fitness_function(chromosomes, 'user_input')
 
     else:
@@ -216,7 +223,7 @@ def resume_ga(args):
     chromosomes = run_generation(chromosomes, cur_iter, args)
 
     with open(args.resume_file, 'wb') as file:
-        pickle.dump((chromosomes, Nf, Nk, cur_iter+1, num_iters), file)
+        pickle.dump((chromosomes, cur_iter+1, num_iters), file)
 
 
 def genetic_algorithm(args):

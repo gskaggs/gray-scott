@@ -52,9 +52,17 @@ class GrayScott:
             movie: create a movie
             outdir: output directory
         """
-        # parameter
-        self.F = chromosome.F
-        self.k = chromosome.k
+        # gray-scott parameters
+        self.F = chromosome.get_param('F')
+        self.k = chromosome.get_param('k')
+
+        # grierer-mienhardt parameters
+        self.p_a = chromosome.get_param('p_a')
+        self.p_a0 = chromosome.get_param('p_a0')
+        self.u_a = chromosome.get_param('u_a')
+        self.p_h = chromosome.get_param('p_h')
+        self.p_h0 = chromosome.get_param('p_h0')
+        self.u_h = chromosome.get_param('u_h')
 
         Nnodes = N + 1
         self.Fo = Fo
