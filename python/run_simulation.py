@@ -33,7 +33,7 @@ from datetime import timedelta
 import time
 import psutil
 
-param_names = ['F', 'k', 'p_a', 'p_a0', 'u_a', 'p_h', 'p_h0', 'u_h']
+param_names = ['F', 'k', 'p_a', 'p_a0', 'u_a', 'p_h', 'p_h0', 'u_h', 'kappa']
 
 def parse_args():
     """
@@ -42,7 +42,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     global param_names
     for name in param_names:
-        parser.add_argument('-' + name, default=[0.4, 0.6, 1], type=float, nargs='+')
+        parser.add_argument('-' + name, default=[0.0, 0.0, 1], type=float, nargs='+')
 
     parser.add_argument('-num_iters', default=1, type=int, help='How many generations of ga to run.')
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
@@ -69,7 +69,7 @@ def demo(args):
     Reproduces the example at https://www.chebfun.org/examples/pde/GrayScott.html
     Pass the --demo option to the driver to run this demo.
     """
-    rolls = GrayScott(F=0.04, kappa=0.06, movie=False, outdir=".", name="Rolls")
+    rolls = GrayScott(F=0.04, k=0.06, movie=False, outdir=".", name="Rolls")
     rolls.integrate(0, 3500, dump_freq=args.dump_freq, should_dump=True)
     
     gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir, name=args.name)
@@ -109,15 +109,23 @@ def process_function_ga(chromosomes, modified, args):
     modified.put('DONE')
 
 
+def grid_w_h(chromosomes):
+    N = len(chromosomes)
+    for W in range(N):
+        if W**2 >= N and N % W == 0:
+            return W, N//W
+
+    return N, 1
+
 def present_chromosomes(chromosomes, cur_iter, args):
-    Nf, Nk = 2, 2
-    img_text = [['' for _ in range(Nk)] for _ in range(Nf)]
-    images   = [[None for _ in range(Nk)] for _ in range(Nf)]
+    W, H = grid_w_h(chromosomes)
+    img_text = [['' for _ in range(H)] for _ in range(W)]
+    images   = [[None for _ in range(H)] for _ in range(W)]
     successful_params = []
 
-    for i in range(Nf):
-        for j in range(Nk):
-            cur = Nk*i+j
+    for i in range(W):
+        for j in range(H):
+            cur = H*i+j
             c = chromosomes[cur]
             F, k, fitness = round(c.F, 4), round(c.k, 4), round(c.fitness, 2)
             img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
@@ -125,18 +133,18 @@ def present_chromosomes(chromosomes, cur_iter, args):
                 img_text[i][j] = img_text[i][j] + f', Fit={fitness}'
             images[i][j]   = chromosomes[cur].image
             if c.pattern:
-                successful_params.append((F, k))
+                successful_params.append(c.get_params())
 
     sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
     last_gen = cur_iter == args.num_iters or args.param_search
     if last_gen:
         print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
         for params in successful_params:
-            print(f"F={params[0]}, k={params[1]}")
+            print(params)
 
     grid = create_img_grid(images, img_text)
     sim_type = 'param_search' if args.param_search else args.fitness
-    sim_id = f'./results/{args.rd}/{sim_type}_{Nf}_{Nk}_{args.end_time}_{cur_iter}'
+    sim_id = f'./results/{args.rd}/{sim_type}_{W}_{H}_{args.end_time}_{cur_iter}'
     img_file, param_file = sim_id + '.png', sim_id + '.pkl'
 
     if last_gen:
@@ -146,7 +154,7 @@ def present_chromosomes(chromosomes, cur_iter, args):
             pass
 
     print('Saving simulation image at', img_file)
-    grid.save(f'./results/{args.rd}/{sim_type}_{Nf}_{Nk}_{args.end_time}_{cur_iter}.png')
+    grid.save(f'./results/{args.rd}/{sim_type}_{W}_{H}_{args.end_time}_{cur_iter}.png')
 
     with open(param_file, 'wb') as file:
         pickle.dump((chromosomes, cur_iter, args), file)
@@ -185,7 +193,7 @@ def run_generation(chromosomes, cur_iter, args):
     return chromosomes
 
 def init_chromosomes(args):
-    param_bounds = [args.F, args.k, args.p_a, args.p_a0, args.u_a, args.p_h, args.p_h0, args.u_h]
+    param_bounds = [args.F, args.k, args.p_a, args.p_a0, args.u_a, args.p_h, args.p_h0, args.u_h, args.kappa]
     
     for bounds in param_bounds:
         bounds[2] = int(bounds[2])

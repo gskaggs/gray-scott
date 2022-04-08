@@ -9,6 +9,9 @@ class Chromosome:
     def get_param(self, param_name):
         return self._rd_params.get(param_name, 0)
 
+    def get_params(self):
+        return self._rd_params
+
     @property
     def fitness(self):
         return self._fitness

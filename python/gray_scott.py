@@ -63,6 +63,7 @@ class GrayScott:
         self.p_h = chromosome.get_param('p_h')
         self.p_h0 = chromosome.get_param('p_h0')
         self.u_h = chromosome.get_param('u_h')
+        self.kappa = chromosome.get_param('kappa')
 
         Nnodes = N + 1
         self.Fo = Fo
@@ -200,9 +201,30 @@ class GrayScott:
         v_view = self.v[1:-1, 1:-1]
 
         # advance state (Euler step)
-        uv2 = u_view * np.power(v_view, 2)
-        u_view += self.dt * (self.fa * self.laplacian(self.u) - uv2 + self.F * (1 - u_view))
-        v_view += self.dt * (self.fs * self.laplacian(self.v) + uv2 - (self.F + self.k) * v_view)
+        # print(np.max(v_view), np.max(u_view))
+        v2 = np.power(v_view, 2)
+        uv2 = u_view * v2
+        v2_u = v2 / u_view 
+
+        GH = True
+        GS = False
+
+        u_update = self.fa * self.laplacian(self.u) # Diffusion
+        if GS:
+            u_update += - uv2 + self.F * (1 - u_view) # Gray-Scott
+        if GH:
+            u_update += self.p_h * v2 + self.p_h0 - self.u_h * u_view # Gierer-Mienhardt
+        u_view += self.dt * u_update
+
+        v_update = self.fs * self.laplacian(self.v) # Diffusion
+        if GS:
+            v_update += uv2 - (self.F + self.k) * v_view # Gray-Scott
+        if GH:
+            v_update += self.p_a * v2_u + self.p_a0 - self.u_a * v_view # Gierer-Mienhardt
+        v_view += self.dt * v_update
+
+        np.clip(u_view, 0.001, 10, out=u_view)
+        np.clip(v_view, 0.001, 10, out=v_view)
 
 
     def _heun(self):
@@ -241,6 +263,7 @@ class GrayScott:
             time: current time
             both: if true, dump contours for both species U and V
         """
+        print('Max v', np.max(self.v))
         V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)
         grad = [l**2 for l in np.gradient(self.v[1:-1, 1:-1])]
         grad = grad[0] + grad[1]
