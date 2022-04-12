@@ -57,12 +57,9 @@ class GrayScott:
         self.k = chromosome.get_param('k')
 
         # grierer-mienhardt parameters
-        self.p_a = chromosome.get_param('p_a')
-        self.p_a0 = chromosome.get_param('p_a0')
-        self.u_a = chromosome.get_param('u_a')
-        self.p_h = chromosome.get_param('p_h')
-        self.p_h0 = chromosome.get_param('p_h0')
-        self.u_h = chromosome.get_param('u_h')
+        self.rho = chromosome.get_param('rho')
+        self.mu = chromosome.get_param('mu')
+        self.nu = chromosome.get_param('nu')
         self.kappa = chromosome.get_param('kappa')
 
         Nnodes = N + 1
@@ -161,7 +158,8 @@ class GrayScott:
         if self.second_order:
             self._heun()
         else:
-            self._euler()
+            # self._euler()
+            self._gierer_mienhardt()
 
         # update ghost cells
         self.update_ghosts(self.u)
@@ -192,6 +190,31 @@ class GrayScott:
         return diff > theta
 
 
+    def _gierer_mienhardt(self):
+        """
+        1st order Euler step
+        """
+        # internal domain
+        a_view = self.v[1:-1, 1:-1]
+        h_view = self.u[1:-1, 1:-1]
+
+        # advance state (Euler step)
+        # print(np.max(a_view), np.max(h_view))
+        a2 = np.power(a_view, 2)
+        ah2 = h_view * (1 + self.kappa * a2)
+        a2_ah2 = a2 / ah2 
+
+        h_update = self.fa * self.laplacian(self.u) # Diffusion
+        h_update +=  self.rho * (a2 - self.nu * h_view)# Gierer-Mienhardt
+        h_view += self.dt * h_update
+
+        a_update = self.fs * self.laplacian(self.v) # Diffusion
+        a_update += self.rho * (a2_ah2 - self.mu * self.a_view) # Gierer-Mienhardt
+        a_view += self.dt * a_update
+
+        # np.clip(h_view, 0.001, 10, out=h_view)
+        # np.clip(a_view, 0.001, 10, out=a_view)        
+
     def _euler(self):
         """
         1st order Euler step
@@ -204,23 +227,13 @@ class GrayScott:
         # print(np.max(v_view), np.max(u_view))
         v2 = np.power(v_view, 2)
         uv2 = u_view * v2
-        v2_u = v2 / u_view 
-
-        GH = True
-        GS = False
 
         u_update = self.fa * self.laplacian(self.u) # Diffusion
-        if GS:
-            u_update += - uv2 + self.F * (1 - u_view) # Gray-Scott
-        if GH:
-            u_update += self.p_h * v2 + self.p_h0 - self.u_h * u_view # Gierer-Mienhardt
+        u_update += - uv2 + self.F * (1 - u_view) # Gray-Scott
         u_view += self.dt * u_update
 
         v_update = self.fs * self.laplacian(self.v) # Diffusion
-        if GS:
-            v_update += uv2 - (self.F + self.k) * v_view # Gray-Scott
-        if GH:
-            v_update += self.p_a * v2_u + self.p_a0 - self.u_a * v_view # Gierer-Mienhardt
+        v_update += uv2 - (self.F + self.k) * v_view # Gray-Scott
         v_view += self.dt * v_update
 
         np.clip(u_view, 0.001, 10, out=u_view)

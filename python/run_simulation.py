@@ -33,7 +33,7 @@ from datetime import timedelta
 import time
 import psutil
 
-param_names = ['F', 'k', 'p_a', 'p_a0', 'u_a', 'p_h', 'p_h0', 'u_h', 'kappa']
+param_names = ['F', 'k', 'rho', 'mu', 'nu', 'kappa']
 
 def parse_args():
     """
@@ -193,16 +193,22 @@ def run_generation(chromosomes, cur_iter, args):
     return chromosomes
 
 def init_chromosomes(args):
-    param_bounds = [args.F, args.k, args.p_a, args.p_a0, args.u_a, args.p_h, args.p_h0, args.u_h, args.kappa]
+    global param_names
+    args_map = vars(args)
+    param_bounds = [args_map[param_name] for param_name in param_names]
     
     for bounds in param_bounds:
-        bounds[2] = int(bounds[2])
+        # If only one value given, that's the only value the sim will use.
+        if len(bounds) == 1:
+            bounds.append(bounds[0])
+            bounds.append(1)
 
+        bounds[2] = int(bounds[2]) # So that np.linspace works
+
+    # bounds[0] is first value in range, bounds[1] is last, and 
+    # bounds[2] is the number of values to take on
     param_bounds = [np.linspace(*bounds) for bounds in param_bounds]
-
     chromosomes = []
-
-    global param_names
 
     for param_combo in itertools.product(*param_bounds):
         rd_params = {}
