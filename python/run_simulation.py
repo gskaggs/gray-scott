@@ -99,7 +99,7 @@ def process_function_ga(chromosomes, modified, args):
         if c == 'DONE':
             break
 
-        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage")
+        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage", rd=args.rd)
         pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=args.should_dump, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
         c.set_fitness(latest)
         c.set_pattern(pattern)
@@ -144,8 +144,13 @@ def present_chromosomes(chromosomes, cur_iter, args):
 
     grid = create_img_grid(images, img_text)
     sim_type = 'param_search' if args.param_search else args.fitness
-    sim_id = f'./results/{args.rd}/{sim_type}_{W}_{H}_{args.end_time}_{cur_iter}'
+    sim_id = f'./results/{args.rd}/{sim_type}_{len(chromosomes)}_{args.end_time}_{cur_iter}'
     img_file, param_file = sim_id + '.png', sim_id + '.pkl'
+
+    count = 1
+    while os.path.exists(img_file) or os.path.exists(param_file):
+        img_file, param_file = sim_id + f'({count})' + '.png', sim_id + f'({count})' + '.pkl'
+        count += 1
 
     if last_gen:
         try:
@@ -154,7 +159,7 @@ def present_chromosomes(chromosomes, cur_iter, args):
             pass
 
     print('Saving simulation image at', img_file)
-    grid.save(f'./results/{args.rd}/{sim_type}_{W}_{H}_{args.end_time}_{cur_iter}.png')
+    grid.save(img_file)
 
     with open(param_file, 'wb') as file:
         pickle.dump((chromosomes, cur_iter, args), file)

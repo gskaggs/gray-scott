@@ -7,6 +7,7 @@ import numpy as np
 import subprocess as sp
 import matplotlib.pyplot as plt
 from PIL import Image as im
+from enum_util import enum
 
 class GrayScott:
     """
@@ -18,6 +19,8 @@ class GrayScott:
         U + 2V → 3V
         V → P (P is an inert product)
     """
+
+    RD_TYPES = ['gray_scott', 'gierer_mienhardt']
 
     def __init__(self,
                  *,
@@ -32,7 +35,8 @@ class GrayScott:
                  second_order=False,
                  movie=False,
                  outdir='.',
-                 name=''):
+                 name='',
+                 rd='gray-scott'):
         """
         Constructor.
         The domain is a square.
@@ -83,9 +87,10 @@ class GrayScott:
         self.fs = Dv / dx**2
         self.dt = Fo * dx**2 / (4*max(Du, Dv))
 
-        self.GM = self.F == 0 or self.k == 0
+        self.RD_ENUM = enum(*GrayScott.RD_TYPES)
+        self.RD_TYPE = self.RD_ENUM.from_string[rd]
 
-        if self.GM:
+        if self.RD_TYPE != self.RD_ENUM.gray_scott:
             self.dt /= 10
             self.fs = .1
             self.fa = 2
@@ -167,10 +172,10 @@ class GrayScott:
         if self.second_order:
             self._heun()
         else:
-            if self.GM:
-                self._gierer_mienhardt()
-            else:
+            if self.RD_TYPE == self.RD_ENUM.gray_scott:
                 self._euler()
+            else:
+                self._gierer_mienhardt()
 
         # update ghost cells
         self.update_ghosts(self.u)
