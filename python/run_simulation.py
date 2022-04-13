@@ -128,9 +128,9 @@ def present_chromosomes(chromosomes, cur_iter, args):
             cur = H*i+j
             c = chromosomes[cur]
             F, k, fitness = round(c.F, 4), round(c.k, 4), round(c.fitness, 2)
-            img_text[i][j] = f'#{cur+1}: F={F}, K={k}'
+            img_text[i][j] = f'#{cur+1}:'
             if args.dirichlet_vis:
-                img_text[i][j] = img_text[i][j] + f', Fit={fitness}'
+                img_text[i][j] = img_text[i][j] + f' Fit={fitness}'
             images[i][j]   = chromosomes[cur].image
             if c.pattern:
                 successful_params.append(c.get_params())
