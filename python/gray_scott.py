@@ -94,8 +94,8 @@ class GrayScott:
             self.dt /= 10
             self.fs = .1
             self.fa = 2
-            print('dt', self.dt)
-            print('Du', self.fa, '\nDv', self.fs)
+            # print('dt', self.dt)
+            # print('Du', self.fa, '\nDv', self.fs)
 
         # nodal grid (+ghosts)
         x = np.linspace(x0-dx, x1+dx, Nnodes+2)
@@ -292,7 +292,9 @@ class GrayScott:
             time: current time
             both: if true, dump contours for both species U and V
         """
-        print('Max v', np.max(self.v))
+        if np.max(self.v) > 10:
+            print('Max v', np.max(self.v))
+            
         V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)
         grad = [l**2 for l in np.gradient(self.v[1:-1, 1:-1])]
         grad = grad[0] + grad[1]
