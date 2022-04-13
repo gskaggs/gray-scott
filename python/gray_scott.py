@@ -83,6 +83,15 @@ class GrayScott:
         self.fs = Dv / dx**2
         self.dt = Fo * dx**2 / (4*max(Du, Dv))
 
+        self.GM = self.F == 0 or self.k == 0
+
+        if self.GM:
+            self.dt /= 10
+            self.fs = .1
+            self.fa = 2
+            print('dt', self.dt)
+            print('Du', self.fa, '\nDv', self.fs)
+
         # nodal grid (+ghosts)
         x = np.linspace(x0-dx, x1+dx, Nnodes+2)
         y = np.linspace(x0-dx, x1+dx, Nnodes+2)
@@ -158,8 +167,10 @@ class GrayScott:
         if self.second_order:
             self._heun()
         else:
-            # self._euler()
-            self._gierer_mienhardt()
+            if self.GM:
+                self._gierer_mienhardt()
+            else:
+                self._euler()
 
         # update ghost cells
         self.update_ghosts(self.u)
@@ -204,13 +215,13 @@ class GrayScott:
         ah2 = h_view * (1 + self.kappa * a2)
         a2_ah2 = a2 / ah2 
 
-        h_update = self.fa * self.laplacian(self.u) # Diffusion
-        h_update +=  self.rho * (a2 - self.nu * h_view)# Gierer-Mienhardt
-        h_view += self.dt * h_update
-
         a_update = self.fs * self.laplacian(self.v) # Diffusion
-        a_update += self.rho * (a2_ah2 - self.mu * self.a_view) # Gierer-Mienhardt
+        a_update += self.rho * (a2_ah2 - self.mu * a_view) # Gierer-Mienhardt
         a_view += self.dt * a_update
+
+        h_update = self.fa * self.laplacian(self.u) # Diffusion
+        h_update += self.rho * (a2 - self.nu * h_view)# Gierer-Mienhardt
+        h_view += self.dt * h_update
 
         # np.clip(h_view, 0.001, 10, out=h_view)
         # np.clip(a_view, 0.001, 10, out=a_view)        

@@ -42,7 +42,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     global param_names
     for name in param_names:
-        parser.add_argument('-' + name, default=[0.0, 0.0, 1], type=float, nargs='+')
+        parser.add_argument('-' + name, default=[0, 0, 1], type=float, nargs='+')
 
     parser.add_argument('-num_iters', default=1, type=int, help='How many generations of ga to run.')
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')

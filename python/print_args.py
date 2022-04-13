@@ -24,7 +24,8 @@ def main():
     for i in range(len(chromosomes)):
         c = chromosomes[i]
         print('Chromosome', i)
-        print(f'F={c.F},k={c.k},fitness={c.fitness}')
+        print(f'Fitness={c.fitness}')
+        print(c._rd_params)
 
 if __name__ == "__main__":
     main()
