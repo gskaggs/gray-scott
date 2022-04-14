@@ -1,3 +1,4 @@
+from curses import newpad
 import numpy as np
 
 class Chromosome:
@@ -25,8 +26,8 @@ class Chromosome:
         return self._pattern
 
     def mutate(self):
-        for i in range(len(self.rd_params)):
-            self.rd_params[i] +=  np.random.normal(0, .001)
+        for k in self._rd_params:
+            self._rd_params[k] += np.random.normal(0, .001)
 
     def set_pattern(self, pattern):
         self._pattern = pattern
@@ -37,12 +38,13 @@ class Chromosome:
     def set_image(self, image):
         self._image = image
 
-    def crossover(self, other):
-        loc = np.random.choice([0, 1, 2])
-        
-        F = other.F if loc == 0 else self.F
-        k = self.k if loc == 2 else other.k
-        result = Chromosome([F, k])
+    def crossover(self, other):    
+        new_params = {}
+        for k in self._rd_params:
+            options = (self._rd_params[k], other._rd_params[k])
+            new_params[k] = np.random.choice(options)
+
+        result = Chromosome(new_params)
         result.mutate()
 
         return result
