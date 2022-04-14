@@ -46,7 +46,7 @@ def parse_args():
 
     parser.add_argument('-num_iters', default=1, type=int, help='How many generations of ga to run.')
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
-    parser.add_argument('-rd', default='gray-scott', type=str, help='The kind of reaction diffussion equation to use.')
+    parser.add_argument('-rd', default=['gray_scott'], type=str, nargs='+', help='The kind of reaction diffussion equation to use.')
 
     parser.add_argument('-T', '--end_time', default=3500, type=float, help='Final time')
     parser.add_argument('-d', '--dump_freq', default=100, type=int, help='Dump frequency (integration steps)')
@@ -99,7 +99,7 @@ def process_function_ga(chromosomes, modified, args):
         if c == 'DONE':
             break
 
-        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage", rd=args.rd)
+        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage", rd_types=args.rd)
         pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=args.should_dump, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
         c.set_fitness(latest)
         c.set_pattern(pattern)
@@ -133,18 +133,20 @@ def present_chromosomes(chromosomes, cur_iter, args):
                 img_text[i][j] = img_text[i][j] + f' Fit={fitness}'
             images[i][j]   = chromosomes[cur].image
             if c.pattern:
-                successful_params.append(c.get_params())
+                successful_params.append((cur, c.get_params()))
 
     sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
     last_gen = cur_iter == args.num_iters or args.param_search
     if last_gen:
         print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
-        for params in successful_params:
+        for idx, params in successful_params:
+            print(f'Chromosome #{idx+1}:')
             print(params)
 
     grid = create_img_grid(images, img_text)
     sim_type = 'param_search' if args.param_search else args.fitness
-    sim_id = f'./results/{args.rd}/{sim_type}_{len(chromosomes)}_{args.end_time}_{cur_iter}'
+    rd_string = '_'.join(sorted(args.rd))
+    sim_id = f'./results/{rd_string}/{sim_type}_{len(chromosomes)}_{args.end_time}_{cur_iter}'
     img_file, param_file = sim_id + '.png', sim_id + '.pkl'
 
     count = 1

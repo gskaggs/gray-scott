@@ -7,7 +7,7 @@ import numpy as np
 import subprocess as sp
 import matplotlib.pyplot as plt
 from PIL import Image as im
-from enum_util import enum
+from enum_util import RdType
 
 class GrayScott:
     """
@@ -19,8 +19,6 @@ class GrayScott:
         U + 2V → 3V
         V → P (P is an inert product)
     """
-
-    RD_TYPES = ['gray_scott', 'gierer_mienhardt']
 
     def __init__(self,
                  *,
@@ -36,7 +34,7 @@ class GrayScott:
                  movie=False,
                  outdir='.',
                  name='',
-                 rd='gray-scott'):
+                 rd_types=['gray_scott']):
         """
         Constructor.
         The domain is a square.
@@ -87,10 +85,9 @@ class GrayScott:
         self.fs = Dv / dx**2
         self.dt = Fo * dx**2 / (4*max(Du, Dv))
 
-        self.RD_ENUM = enum(*GrayScott.RD_TYPES)
-        self.RD_TYPE = self.RD_ENUM.from_string[rd]
+        self.rd_type = RdType(rd_types)
 
-        if self.RD_TYPE != self.RD_ENUM.gray_scott:
+        if len(rd_types) != 1 or not self.rd_type.GRAY_SCOTT:
             self.dt /= 10
             self.fs = .1
             self.fa = 2
@@ -172,10 +169,7 @@ class GrayScott:
         if self.second_order:
             self._heun()
         else:
-            if self.RD_TYPE == self.RD_ENUM.gray_scott:
-                self._euler()
-            else:
-                self._gierer_mienhardt()
+            self._euler()
 
         # update ghost cells
         self.update_ghosts(self.u)
@@ -206,7 +200,7 @@ class GrayScott:
         return diff > theta
 
 
-    def _gierer_mienhardt(self):
+    def _gierer_mienhardt(self, a_update, h_update):
         """
         1st order Euler step
         """
@@ -220,16 +214,24 @@ class GrayScott:
         ah2 = h_view * (1 + self.kappa * a2)
         a2_ah2 = a2 / ah2 
 
-        a_update = self.fs * self.laplacian(self.v) # Diffusion
         a_update += self.rho * (a2_ah2 - self.mu * a_view) # Gierer-Mienhardt
-        a_view += self.dt * a_update
-
-        h_update = self.fa * self.laplacian(self.u) # Diffusion
         h_update += self.rho * (a2 - self.nu * h_view)# Gierer-Mienhardt
-        h_view += self.dt * h_update
 
         # np.clip(h_view, 0.001, 10, out=h_view)
-        # np.clip(a_view, 0.001, 10, out=a_view)        
+        # np.clip(a_view, 0.001, 10, out=a_view)    
+
+    def _gray_scott(self, v_update, u_update):
+        # internal domain
+        v_view = self.v[1:-1, 1:-1]
+        u_view = self.u[1:-1, 1:-1]
+
+        # advance state (Euler step)
+        # print(np.max(v_view), np.max(u_view))
+        v2 = np.power(v_view, 2)
+        uv2 = u_view * v2
+
+        v_update += uv2 - (self.F + self.k) * v_view # Gray-Scott
+        u_update += - uv2 + self.F * (1 - u_view) # Gray-Scott
 
     def _euler(self):
         """
@@ -244,16 +246,19 @@ class GrayScott:
         v2 = np.power(v_view, 2)
         uv2 = u_view * v2
 
-        u_update = self.fa * self.laplacian(self.u) # Diffusion
-        u_update += - uv2 + self.F * (1 - u_view) # Gray-Scott
-        u_view += self.dt * u_update
 
         v_update = self.fs * self.laplacian(self.v) # Diffusion
-        v_update += uv2 - (self.F + self.k) * v_view # Gray-Scott
-        v_view += self.dt * v_update
+        u_update = self.fa * self.laplacian(self.u) # Diffusion
 
-        np.clip(u_view, 0.001, 10, out=u_view)
-        np.clip(v_view, 0.001, 10, out=v_view)
+        if self.rd_type.GIERER_MIENHARDT:
+            self._gierer_mienhardt(v_update, u_update)
+        if self.rd_type.GRAY_SCOTT:
+            self._gray_scott(v_update, u_update)
+
+        v_view += self.dt * v_update
+        u_view += self.dt * u_update
+        # np.clip(u_view, 0.001, 10, out=u_view)
+        # np.clip(v_view, 0.001, 10, out=v_view)
 
 
     def _heun(self):
@@ -294,7 +299,7 @@ class GrayScott:
         """
         if np.max(self.v) > 10:
             print('Max v', np.max(self.v))
-            
+
         V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)
         grad = [l**2 for l in np.gradient(self.v[1:-1, 1:-1])]
         grad = grad[0] + grad[1]
