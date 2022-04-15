@@ -154,7 +154,8 @@ def present_chromosomes(chromosomes, cur_iter, args):
         img_file, param_file = sim_id + f'({count})' + '.png', sim_id + f'({count})' + '.pkl'
         count += 1
 
-    if last_gen:
+    have_display = bool(os.environ.get('DISPLAY', None))
+    if last_gen and have_display:
         try:
             grid.show()
         except:
