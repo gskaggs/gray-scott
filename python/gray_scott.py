@@ -92,12 +92,17 @@ class GrayScott:
 
         self.rd_type = RdType(rd_types)
 
-        if len(rd_types) != 1 or not self.rd_type.GRAY_SCOTT:
+        if self.rd_type.GIERER_MIENHARDT:
             self.dt /= 10
             self.fs = .1
             self.fa = 2
             # print('dt', self.dt)
             # print('Du', self.fa, '\nDv', self.fs)
+
+        if self.rd_type.GENERALIZED:
+            self.dt /= 50
+            self.fs = .05
+            self.ga = 1
 
         if self.rd_type.GENERALIZED:
             self.rho_np, self.kap_np = self.gen_params[0], self.gen_params[1]
@@ -256,8 +261,8 @@ class GrayScott:
             # print('Updates', updates, 'V', self.v_view, sep='\n')
 
         if self.rd_type.GENERALIZED:
-            updates += np.array(self.generalized_sim.simulate())[:, 1:-1, 1:-1]
-            # updates += np.array(generalized_np(self.rho_np, self.kap_np, self.v_view, self.u_view))
+            # updates += np.array(self.generalized_sim.simulate())[:, 1:-1, 1:-1]
+            updates += np.array(generalized_np(self.rho_np, self.kap_np, self.v_view, self.u_view))
 
         v_update, u_update = updates[0], updates[1]
         self.v_view += self.dt * v_update

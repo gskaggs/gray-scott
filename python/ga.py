@@ -30,6 +30,8 @@ class Chromosome:
         for k in self._rd_params:
             self._rd_params[k] += np.random.normal(0, .001)
 
+        self.gen_params += np.random.normal(0, .005, self.gen_params.shape)
+
     def set_pattern(self, pattern):
         self._pattern = pattern
 
@@ -45,12 +47,13 @@ class Chromosome:
             options = (self._rd_params[k], other._rd_params[k])
             new_rd_params[k] = np.random.choice(options)
 
-        new_gen_params = np.zeros(np.shape(self.gen_params)).tolist()
+        new_gen_params = np.empty_like(self.gen_params)
         for k in range(len(self.gen_params)):
             for i in range(len(self.gen_params[k])):
                 for j in range(len(self.gen_params[k][i])):
-                    options = (self.gen_params[k][i][j], other.gen_params[k][i][j])
-                    new_gen_params[k][i][j] = np.random.choice(options)
+                    for l in range(len(self.gen_params[k][i][j])):
+                        options = (self.gen_params[k][i][j][l], other.gen_params[k][i][j][l])
+                        new_gen_params[k][i][j][l] = np.random.choice(options)
 
 
         result = Chromosome(new_rd_params, new_gen_params)
