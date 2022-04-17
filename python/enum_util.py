@@ -7,12 +7,13 @@ def enum(*sequential, **named):
 
 
 class RdType:
-    VALID_TYPES = set(['gray_scott', 'gierer_mienhardt'])
+    VALID_TYPES = set(['gray_scott', 'gierer_mienhardt', 'generalized'])
     def __init__(self, rd_types):
         self.rd_types = set(rd_types)
 
         self.GRAY_SCOTT = 'gray_scott' in rd_types
         self.GIERER_MIENHARDT = 'gierer_mienhardt' in rd_types
+        self.GENERALIZED = 'generalized' in rd_types
 
         for type in rd_types:
             assert type in RdType.VALID_TYPES, 'Invalid reaction diffusion type.'

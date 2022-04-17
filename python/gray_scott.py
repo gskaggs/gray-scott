@@ -8,6 +8,8 @@ import subprocess as sp
 import matplotlib.pyplot as plt
 from PIL import Image as im
 from enum_util import RdType
+from reaction_diffusion_np import gray_scott_np, generalized_np
+from reaction_diffusion import GrayScottSimulator, GeneralizedSimulator
 
 class GrayScott:
     """
@@ -64,6 +66,9 @@ class GrayScott:
         self.nu = chromosome.get_param('nu')
         self.kappa = chromosome.get_param('kappa')
 
+        # generalized parameters
+        self.gen_params = chromosome.gen_params
+
         Nnodes = N + 1
         self.Fo = Fo
         self.x0 = x0
@@ -94,14 +99,17 @@ class GrayScott:
             # print('dt', self.dt)
             # print('Du', self.fa, '\nDv', self.fs)
 
+        if self.rd_type.GENERALIZED:
+            self.rho_np, self.kap_np = self.gen_params[0], self.gen_params[1]
+
         # nodal grid (+ghosts)
         x = np.linspace(x0-dx, x1+dx, Nnodes+2)
         y = np.linspace(x0-dx, x1+dx, Nnodes+2)
         self.x, self.y = np.meshgrid(x, y)
 
         # initial condition
-        self.u = np.zeros((len(x), len(y)))
-        self.v = np.zeros((len(x), len(y)))
+        self.u = np.zeros((len(x), len(y))).astype(np.float32)
+        self.v = np.zeros((len(x), len(y))).astype(np.float32)
         if self.second_order:
             self.u_tmp = np.zeros((len(x), len(y)))
             self.v_tmp = np.zeros((len(x), len(y)))
@@ -117,6 +125,14 @@ class GrayScott:
         # populate ghost cells
         self.update_ghosts(self.u)
         self.update_ghosts(self.v)
+
+        self.v_view = self.v[1:-1, 1:-1]
+        self.u_view = self.u[1:-1, 1:-1]
+
+        if self.rd_type.GRAY_SCOTT:
+            self.grey_scott_sim = GrayScottSimulator(self.v, self.u, self.F, self.k)
+        if self.rd_type.GENERALIZED:
+            self.generalized_sim = GeneralizedSimulator(self.v, self.u, self.rho_np, self.kap_np)
 
     def integrate(self, t0, t1, *, dump_freq=100, report=50, dirichlet_vis=False, should_dump=False, fitness='pattern'):
         """
@@ -135,7 +151,7 @@ class GrayScott:
         t = t0
         s = 0
         latest = 0
-        while t < t1:
+        while t < t1 and not np.isnan(np.sum(self.v)):
             if should_dump and s % dump_freq == 0:
                 self._dump(s, t)
             t = self.update(time=t)
@@ -199,7 +215,6 @@ class GrayScott:
 
         return diff > theta
 
-
     def _gierer_mienhardt(self, a_update, h_update):
         """
         1st order Euler step
@@ -220,43 +235,33 @@ class GrayScott:
         # np.clip(h_view, 0.001, 10, out=h_view)
         # np.clip(a_view, 0.001, 10, out=a_view)    
 
-    def _gray_scott(self, v_update, u_update):
-        # internal domain
-        v_view = self.v[1:-1, 1:-1]
-        u_view = self.u[1:-1, 1:-1]
-
-        # advance state (Euler step)
-        # print(np.max(v_view), np.max(u_view))
-        v2 = np.power(v_view, 2)
-        uv2 = u_view * v2
-
-        v_update += uv2 - (self.F + self.k) * v_view # Gray-Scott
-        u_update += - uv2 + self.F * (1 - u_view) # Gray-Scott
 
     def _euler(self):
         """
         1st order Euler step
         """
-        # internal domain
-        u_view = self.u[1:-1, 1:-1]
-        v_view = self.v[1:-1, 1:-1]
 
         # advance state (Euler step)
         # print(np.max(v_view), np.max(u_view))
-        v2 = np.power(v_view, 2)
-        uv2 = u_view * v2
-
 
         v_update = self.fs * self.laplacian(self.v) # Diffusion
         u_update = self.fa * self.laplacian(self.u) # Diffusion
+        updates = np.array([v_update, u_update])
 
         if self.rd_type.GIERER_MIENHARDT:
             self._gierer_mienhardt(v_update, u_update)
         if self.rd_type.GRAY_SCOTT:
-            self._gray_scott(v_update, u_update)
+            # updates += np.array(gray_scott_np(self.F, self.k, self.v_view, self.u_view))
+            updates += np.array(self.grey_scott_sim.simulate())[:, 1:-1, 1:-1]
+            # print('Updates', updates, 'V', self.v_view, sep='\n')
 
-        v_view += self.dt * v_update
-        u_view += self.dt * u_update
+        if self.rd_type.GENERALIZED:
+            updates += np.array(self.generalized_sim.simulate())[:, 1:-1, 1:-1]
+            # updates += np.array(generalized_np(self.rho_np, self.kap_np, self.v_view, self.u_view))
+
+        v_update, u_update = updates[0], updates[1]
+        self.v_view += self.dt * v_update
+        self.u_view += self.dt * u_update
         # np.clip(u_view, 0.001, 10, out=u_view)
         # np.clip(v_view, 0.001, 10, out=v_view)
 
@@ -297,7 +302,7 @@ class GrayScott:
             time: current time
             both: if true, dump contours for both species U and V
         """
-        if np.max(self.v) > 10:
+        if np.max(self.v) > 10 or True:
             print('Max v', np.max(self.v))
 
         V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)

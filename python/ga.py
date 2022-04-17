@@ -2,8 +2,9 @@ from curses import newpad
 import numpy as np
 
 class Chromosome:
-    def __init__(self, rd_params):
+    def __init__(self, rd_params, gen_params=None):
         self._rd_params = rd_params
+        self.gen_params = gen_params if gen_params is not None else []
         self.F = self.get_param('F')
         self.k = self.get_param('k')
 
@@ -39,12 +40,20 @@ class Chromosome:
         self._image = image
 
     def crossover(self, other):    
-        new_params = {}
+        new_rd_params = {}
         for k in self._rd_params:
             options = (self._rd_params[k], other._rd_params[k])
-            new_params[k] = np.random.choice(options)
+            new_rd_params[k] = np.random.choice(options)
 
-        result = Chromosome(new_params)
+        new_gen_params = np.zeros(np.shape(self.gen_params)).tolist()
+        for k in range(len(self.gen_params)):
+            for i in range(len(self.gen_params[k])):
+                for j in range(len(self.gen_params[k][i])):
+                    options = (self.gen_params[k][i][j], other.gen_params[k][i][j])
+                    new_gen_params[k][i][j] = np.random.choice(options)
+
+
+        result = Chromosome(new_rd_params, new_gen_params)
         result.mutate()
 
         return result

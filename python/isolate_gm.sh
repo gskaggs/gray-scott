@@ -7,4 +7,5 @@ python3 run_simulation.py --param_search \
 -mu 1 \
 -nu .9 \
 -kappa .238 \
---dirichlet_vis
+--dirichlet_vis \
+-num_generalized 5

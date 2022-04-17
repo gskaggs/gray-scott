@@ -45,6 +45,7 @@ def parse_args():
         parser.add_argument('-' + name, default=[0, 0, 1], type=float, nargs='+')
 
     parser.add_argument('-num_iters', default=1, type=int, help='How many generations of ga to run.')
+    parser.add_argument('-num_generalized', default=0, type=int, help='How big the population of generalized chromosomes is.')
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
     parser.add_argument('-rd', default=['gray_scott'], type=str, nargs='+', help='The kind of reaction diffussion equation to use.')
 
@@ -146,7 +147,11 @@ def present_chromosomes(chromosomes, cur_iter, args):
     grid = create_img_grid(images, img_text)
     sim_type = 'param_search' if args.param_search else args.fitness
     rd_string = '_'.join(sorted(args.rd))
-    sim_id = f'./results/{rd_string}/{sim_type}_{len(chromosomes)}_{args.end_time}_{cur_iter}'
+    sim_dir =  f'./results/{rd_string}'
+    if not os.path.exists(sim_dir):
+        os.makedirs(sim_dir)
+
+    sim_id = f'{sim_dir}/{sim_type}_{len(chromosomes)}_{args.end_time}_{cur_iter}'
     img_file, param_file = sim_id + '.png', sim_id + '.pkl'
 
     count = 1
@@ -200,6 +205,28 @@ def run_generation(chromosomes, cur_iter, args):
 
     return chromosomes
 
+
+def init_gen_params():
+    rho = [[[np.random.random() for _ in range(5)] for _ in range(5)] for _ in range(2)]
+    kap = [[[np.random.random() for _ in range(5)] for _ in range(5)] for _ in range(2)]
+
+    # rho = np.array(rho)
+    # kap = np.array(kap)
+    # rho *= 0
+    # kap *= 0
+
+    # F = 0.0215
+    # k = 0.0526
+
+    # rho[0, 4, 3] = 1
+    # rho[0, 3, 2] = -(F + k)
+    # rho[1, 2, 2] = F
+    # rho[1, 4, 3] = -1
+    # rho[1, 2, 3] = -F
+
+    return np.array([rho, kap]).astype(np.float32)
+
+
 def init_chromosomes(args):
     global param_names
     args_map = vars(args)
@@ -222,7 +249,13 @@ def init_chromosomes(args):
         rd_params = {}
         for i in range(len(param_names)):
             rd_params[param_names[i]] = param_combo[i] 
-        chromosomes.append(Chromosome(rd_params))
+        
+        for _ in range(args.num_generalized):
+            gen_params = init_gen_params()
+            chromosomes.append(Chromosome(rd_params, gen_params))
+
+        if 'generalized' not in args.rd:
+            chromosomes.append(Chromosome(rd_params))
 
     return chromosomes
 
@@ -291,6 +324,9 @@ def main():
     print(f'Num_processes = {args.num_processes}')
 
     make_output_dirs(args)
+
+    if args.num_generalized and 'generalized' not in args.rd:
+        args.rd.append('generalized')
 
     if args.demo:
         demo(args)
