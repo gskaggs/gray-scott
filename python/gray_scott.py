@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from PIL import Image as im
 from enum_util import RdType
 from reaction_diffusion_np import gray_scott_np, generalized_np
-from reaction_diffusion import GrayScottSimulator, GeneralizedSimulator
+# from reaction_diffusion import GrayScottSimulator, GeneralizedSimulator
 
 class GrayScott:
     """
@@ -100,9 +100,9 @@ class GrayScott:
             # print('Du', self.fa, '\nDv', self.fs)
 
         if self.rd_type.GENERALIZED:
-            self.dt /= 50
+            self.dt /= 1000
             self.fs = .05
-            self.ga = 1
+            self.ga = .1
 
         if self.rd_type.GENERALIZED:
             self.rho_np, self.kap_np = self.gen_params[0], self.gen_params[1]
@@ -134,10 +134,10 @@ class GrayScott:
         self.v_view = self.v[1:-1, 1:-1]
         self.u_view = self.u[1:-1, 1:-1]
 
-        if self.rd_type.GRAY_SCOTT:
-            self.grey_scott_sim = GrayScottSimulator(self.v, self.u, self.F, self.k)
-        if self.rd_type.GENERALIZED:
-            self.generalized_sim = GeneralizedSimulator(self.v, self.u, self.rho_np, self.kap_np)
+        # if self.rd_type.GRAY_SCOTT:
+        #     self.grey_scott_sim = GrayScottSimulator(self.v, self.u, self.F, self.k)
+        # if self.rd_type.GENERALIZED:
+        #     self.generalized_sim = GeneralizedSimulator(self.v, self.u, self.rho_np, self.kap_np)
 
     def integrate(self, t0, t1, *, dump_freq=100, report=50, dirichlet_vis=False, should_dump=False, fitness='pattern'):
         """
@@ -173,7 +173,8 @@ class GrayScott:
         
         if fitness=='dirichlet':
             latest = self._dirichlet()
-
+            if np.isnan(latest):
+                latest = -1
         return pattern, latest, image
 
 
@@ -256,8 +257,8 @@ class GrayScott:
         if self.rd_type.GIERER_MIENHARDT:
             self._gierer_mienhardt(v_update, u_update)
         if self.rd_type.GRAY_SCOTT:
-            # updates += np.array(gray_scott_np(self.F, self.k, self.v_view, self.u_view))
-            updates += np.array(self.grey_scott_sim.simulate())[:, 1:-1, 1:-1]
+            updates += np.array(gray_scott_np(self.F, self.k, self.v_view, self.u_view))
+            # updates += np.array(self.grey_scott_sim.simulate())[:, 1:-1, 1:-1]
             # print('Updates', updates, 'V', self.v_view, sep='\n')
 
         if self.rd_type.GENERALIZED:

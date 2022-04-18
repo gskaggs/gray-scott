@@ -53,6 +53,8 @@ class Chromosome:
                 for j in range(len(self.gen_params[k][i])):
                     for l in range(len(self.gen_params[k][i][j])):
                         options = (self.gen_params[k][i][j][l], other.gen_params[k][i][j][l])
+                        if self.fitness == -1:
+                            options = (np.random.random(), np.random.random())
                         new_gen_params[k][i][j][l] = np.random.choice(options)
 
 
