@@ -134,10 +134,10 @@ class GrayScott:
         self.v_view = self.v[1:-1, 1:-1]
         self.u_view = self.u[1:-1, 1:-1]
 
-        # if self.rd_type.GRAY_SCOTT:
-        #     self.grey_scott_sim = GrayScottSimulator(self.v, self.u, self.F, self.k)
-        # if self.rd_type.GENERALIZED:
-        #     self.generalized_sim = GeneralizedSimulator(self.v, self.u, self.rho_np, self.kap_np)
+        if self.rd_type.GRAY_SCOTT:
+            self.grey_scott_sim = GrayScottSimulator(self.v, self.u, self.F, self.k)
+        if self.rd_type.GENERALIZED:
+            self.generalized_sim = GeneralizedSimulator(self.v, self.u, self.rho_np, self.kap_np)
 
     def integrate(self, t0, t1, *, dump_freq=100, report=50, dirichlet_vis=False, should_dump=False, fitness='pattern'):
         """
@@ -262,8 +262,8 @@ class GrayScott:
             # print('Updates', updates, 'V', self.v_view, sep='\n')
 
         if self.rd_type.GENERALIZED:
-            # updates += np.array(self.generalized_sim.simulate())[:, 1:-1, 1:-1]
-            updates += np.array(generalized_np(self.rho_np, self.kap_np, self.v_view, self.u_view))
+            updates += np.array(self.generalized_sim.simulate())[:, 1:-1, 1:-1]
+            # updates += np.array(generalized_np(self.rho_np, self.kap_np, self.v_view, self.u_view))
 
         v_update, u_update = updates[0], updates[1]
         self.v_view += self.dt * v_update
