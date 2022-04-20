@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from PIL import Image as im
 from enum_util import RdType
 from reaction_diffusion_np import gray_scott_np, generalized_np
-# from reaction_diffusion import GrayScottSimulator, GeneralizedSimulator
+from reaction_diffusion import GrayScottSimulator, GeneralizedSimulator
 
 class GrayScott:
     """
