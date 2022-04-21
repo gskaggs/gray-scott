@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from asyncio import new_event_loop
-from re import U
-from turtle import update
 import numpy as np
-import pyopencl as cl
 from datetime import timedelta
 import time
 from copy import deepcopy as copy
