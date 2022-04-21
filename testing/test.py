@@ -10,6 +10,7 @@ from reaction_diffusion_np import generalized_np, gray_scott_np, laplacian, gier
 import time
 from copy import deepcopy as copy
 from core_simulator import CoreSimulator
+from core_simulator_np import CoreSimulatorNp
 
 GENERALIZED = True
 TEST = False
@@ -53,26 +54,10 @@ d_g = timedelta(seconds=(end-start) / count)
 total_g = timedelta(seconds=(end-start))
 
 # Check on CPU with Numpy:
-v_np, u_np = copy(v_np_og), copy(u_np_og)
-v_update, u_update = np.zeros(v_np.shape)[1:-1, 1:-1], np.zeros(u_np.shape)[1:-1, 1:-1]
-updates_np = np.array((v_update, u_update))
-
 start = time.time()
-for _ in range(count):
-    updates_np = np.zeros(updates_np.shape)
-    updates_np[0] += laplacian(v_np)
-    updates_np[1] += laplacian(u_np)
-
-    if 'generalized' in rd_types:
-        updates_np += np.array(generalized_np(rho_np, kap_np, v_np, u_np))[:, 1:-1, 1:-1]
-    if 'gray_scott' in rd_types:
-        updates_np += np.array(gray_scott_np(F, k, v_np, u_np))[:, 1:-1, 1:-1]
-    if 'gierer_mienhardt' in rd_types:
-        updates_np += np.array(gierer_mienhardt(v_np, u_np, rho_gm, kap_gm, mu, nu))
-    
-    v_np[1:-1, 1:-1] += dt * updates_np[0]
-    u_np[1:-1, 1:-1] += dt * updates_np[1]
-
+v_np, u_np = copy(v_np_og), copy(u_np_og)
+knuckles = CoreSimulatorNp(v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types)
+v_np, u_np = knuckles.simulate(dt, count)
 end = time.time()
 
 d_np = timedelta(seconds=(end-start) / count)
@@ -87,7 +72,6 @@ if TEST:
     print('GPU:', v_g, 'CPU', v_np, sep='\n')
     print('Diff:', v_g - v_np, sep='\n')
 # print('GPU:', updates, 'NP', updates_np,sep='\n')
-
 # print(updates, updates_np)
 
 assert np.allclose(v_g, v_np)
