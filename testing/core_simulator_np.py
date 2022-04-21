@@ -1,5 +1,5 @@
 import numpy as np
-from reaction_diffusion_np import generalized_np, gray_scott_np, laplacian, gierer_mienhardt
+from core_simulator_np_utils import generalized_np, gray_scott_np, laplacian, gierer_mienhardt
 
 class CoreSimulatorNp():
     def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types):

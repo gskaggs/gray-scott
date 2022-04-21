@@ -24,7 +24,6 @@ def gierer_mienhardt(v, u, rho, kappa, mu, nu):
 
     return a_update, h_update
 
-
 def generalized_np(rho_np, kap_np, v_np, u_np):
     v_pows, u_pows = {}, {}
     for pow in range(3):
