@@ -9,13 +9,20 @@ def gray_scott_np(F, k, v_np, u_np):
     return v_update, u_update
 
 def laplacian(a):
-    """
-    Discretization of Laplacian operator
-
-    Arguments:
-        a: 2D array
-    """
     return a[2:, 1:-1] + a[1:-1, 2:] + a[0:-2, 1:-1] + a[1:-1, 0:-2] - 4 * a[1:-1, 1:-1]
+
+def gierer_mienhardt(v, u, rho, kappa, mu, nu):
+    a_view = v[1:-1, 1:-1]
+    h_view = u[1:-1, 1:-1]
+
+    a2 = np.power(a_view, 2)
+    ah2 = h_view * (1 + kappa * a2)
+    a2_ah2 = a2 / ah2 
+
+    a_update = rho * (a2_ah2 - mu * a_view) 
+    h_update = rho * (a2 - nu * h_view)
+
+    return a_update, h_update
 
 
 def generalized_np(rho_np, kap_np, v_np, u_np):
