@@ -12,12 +12,12 @@ from core_simulator import CoreSimulator
 from core_simulator_np import CoreSimulatorNp
 
 # Initialize testing parameters
-TEST = False
+DEBUG = False
 LAPLACIAN = True
 
 # Initialize simulation hyper-parameters
-rd_types = [] if TEST else ['generalized', 'gray_scott', 'gierer_mienhardt']
-num_iters = 1 if TEST else 200      
+rd_types = [] if DEBUG else ['generalized', 'gray_scott', 'gierer_mienhardt']
+num_iters = 1 if DEBUG else 200      
 grid_size = 256                        
 dt = 0.001
 
@@ -64,7 +64,7 @@ print(f'Deltv_g {d_g}   Total time_g: {total_g}')
 print(f'Deltv {d_np}   Total time_np: {total_np}')
 print(f'Speedup: {round(d_np / d_g, 3)}X')
 
-if TEST:
+if DEBUG:
     print('Original v', v_og, sep='\n')
     print('GPU:', v_g, 'CPU', v_np, sep='\n')
     print('Diff:', v_g - v_np, sep='\n')
