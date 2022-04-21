@@ -15,35 +15,32 @@ __kernel void iterate(
     float u = u_g[idx(gidx, gidy)];
     float u2 = u * u;
 
-    v_update_g[idx(gidx, gidy)] = 0;
+    float pow_v[3] = {1, v, v2};
+    float pow_u[3] = {1, u, u2};
 
-    int i = -2;
-    for (i = -2; i < 3; i++)
-    {
-        int j = -2;
-        for (j = -2; j < 3; j++)
-        {
-            int i2 = i + 2;
-            int j2 = j + 2;
-            float rho = rho_g[j2 + 5 * i2];
-            float kap = kap_g[j2 + 5 * i2];
-            float num = rho;
-            float den = 1;
+    float result = 0;
+    float eps = .0001;
 
-            if (i == -2) den *= v2;
-            if (i == -1) den *= v;
-            if (i == 1) num *= v;
-            if (i == 2) num *= v2;
+    int term = 0;
+    for (term = 0; term < 3; term++) {
+        int i = 0;
+        float nom = 0;
+        float den = 0;
+        for (i = 0; i < 3; i++) {
+            int j = 0;
+            for (j = 0; j < 3; j++) {
+                float rho = rho_g[9 * term + 3 * i + j];
+                float kap = kap_g[9 * term + 3 * i + j];
 
-            if (j == -2) den *= u2;
-            if (j == -1) den *= u;
-            if (j == 1) num *= u;
-            if (j == 2) num *= u2;
+                nom += rho * pow_v[i] * pow_u[j];
+                den += kap * pow_v[i] * pow_u[j];
 
-            if (i < 0 || j < 0) den += kap;
-            
-            if (!(den < 0.0001 && den > -0.0001))
-                v_update_g[idx(gidx, gidy)] += num / den;
+                
+            }
         }
+        if (den < -eps || den > eps) 
+            result += nom / den;
     }
+
+    v_update_g[idx(gidx, gidy)] += result;
 }
