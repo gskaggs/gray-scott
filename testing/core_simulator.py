@@ -1,7 +1,5 @@
 import numpy as np
 import pyopencl as cl
-from datetime import timedelta
-import time
 
 def init_opencl():
     ctx = cl.create_some_context()
