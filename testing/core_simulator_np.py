@@ -24,12 +24,12 @@ class CoreSimulatorNp(CoreSimulator):
             
             self.v_np[1:-1, 1:-1] += dt * self.updates_np[0]
             self.u_np[1:-1, 1:-1] += dt * self.updates_np[1]
-            
-            # v_view, u_view = self.v_np[1:-1, 1:-1], self.u_np[1:-1, 1:-1]
-            # v_view += dt * self.updates_np[0]
-            # u_view += dt * self.updates_np[1]
 
             np.clip(self.v_np[1:-1, 1:-1], 0, 5, out=self.v_np[1:-1, 1:-1])
             np.clip(self.u_np[1:-1, 1:-1], 0, 5, out=self.u_np[1:-1, 1:-1])
+
+            if self.ROUND:
+                self.v_np = np.round(self.round_const * self.v_np) / self.round_const
+                self.u_np = np.round(self.round_const * self.u_np) / self.round_const
 
         return self.v_np, self.u_np

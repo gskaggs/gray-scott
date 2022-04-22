@@ -32,9 +32,6 @@ __kernel void iterate(
                 double rho = rho_g[9 * term + 3 * i + j];
                 double kap = kap_g[9 * term + 3 * i + j];
 
-                if (rho < 0) rho = -rho;
-                if (kap < 0) kap = -kap;
-
                 nom += rho * pow_v[i] * pow_u[j];
                 den += kap * pow_v[i] * pow_u[j];
             }

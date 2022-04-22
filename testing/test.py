@@ -10,14 +10,13 @@ from core_simulator_np import CoreSimulatorNp
 # Initialize testing parameters
 DEBUG = False
 LAPLACIAN = True
-ABS = False
+ABS = True
 np.random.seed(0)
 
 # Initialize simulation hyper-parameters
-# rd_types = [] if DEBUG else ['generalized', 'gray_scott', 'gierer_mienhardt']
 rd_types = ['generalized']
-num_iters = 1 if DEBUG else 200
-grid_size = 10                        
+num_iters = 1 if DEBUG else 2000
+grid_size = 256                        
 dt = 0.001
 
 # Original v and u
@@ -39,10 +38,6 @@ if ABS:
     kap_np = np.abs(kap_np)
 
 rho_gm, kap_gm, mu, nu = -.5, .238, 1.0, .9 #np.random.rand(4)
-
-# print("rho", rho_np, sep='\n')
-# print("kap", kap_np, sep='\n')
-
 
 # Run simulation on GPU
 start = time.time()
@@ -72,10 +67,9 @@ print(f'Deltv_g {d_g}   Total time_g: {total_g}')
 print(f'Deltv {d_np}   Total time_np: {total_np}')
 print(f'Speedup: {round(d_np / d_g, 3)}X')
 
-if True or DEBUG:
-    print('Original v', v_og, sep='\n')
-    print('GPU:', v_g, 'CPU', v_np, sep='\n')
-    print('Diff:', v_g - v_np, sep='\n')
+print('Original v', v_og, sep='\n')
+print('GPU:', v_g, 'CPU', v_np, sep='\n')
+print('Diff:', v_g - v_np, sep='\n')
 
 assert np.allclose(v_g, v_np)
 assert np.allclose(u_g, u_np)

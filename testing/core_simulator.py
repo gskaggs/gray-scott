@@ -1,5 +1,7 @@
 import numpy as np
 import pyopencl as cl
+import pyopencl.array as array
+import pyopencl.clmath as clmath
 
 def init_opencl():
     ctx = cl.create_some_context()
@@ -19,6 +21,8 @@ class CoreSimulator():
         self.mu = np.float64(mu)
         self.nu = np.float64(nu)
         self.rd_types = rd_types
+        self.ROUND = False
+        self.round_const = 10**6
 
 class CoreSimulatorGpu(CoreSimulator):
     def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types):
@@ -65,17 +69,17 @@ class CoreSimulatorGpu(CoreSimulator):
 
         # Allocate memory:
         # V and U
-        self.v_g = cl.Buffer(self.ctx, self.mf.READ_WRITE, size=self.v_np.nbytes)
-        self.u_g = cl.Buffer(self.ctx, self.mf.READ_WRITE, size=self.v_np.nbytes)
-        cl.enqueue_copy(self.queue, self.v_g, self.v_np)
-        cl.enqueue_copy(self.queue, self.u_g, self.u_np)
+        self.v_g = array.to_device(self.queue, self.v_np)
+        self.u_g = array.to_device(self.queue, self.u_np)
 
         # Updates 
         # (We don't set this memory to any particular value here. 
         # Instead, we set it in laplacian.c)
         # Also, note that we assume the update matrix has same size as n_np
-        self.v_update_g = cl.Buffer(self.ctx, self.mf.READ_WRITE, size=self.v_np.nbytes)
-        self.u_update_g = cl.Buffer(self.ctx, self.mf.READ_WRITE, size=self.v_np.nbytes)
+        self.v_update_np = np.empty_like(self.v_np)
+        self.u_update_np = np.empty_like(self.u_np)
+        self.v_update_g = array.to_device(self.queue, self.v_update_np)
+        self.u_update_g = array.to_device(self.queue, self.u_update_np)
 
         # Simulation Paramaters
         # Index 0 is for V, Index 1 is for U
@@ -86,26 +90,30 @@ class CoreSimulatorGpu(CoreSimulator):
         dt = np.float64(dt)
         for _ in range(T):
             # Laplacian
-            self.lap(self.queue, self.v_np.shape, None, self.v_g, self.v_update_g)
-            self.lap(self.queue, self.u_np.shape, None, self.u_g, self.u_update_g)
+            self.lap(self.queue, self.v_np.shape, None, self.v_g.data, self.v_update_g.data)
+            self.lap(self.queue, self.u_np.shape, None, self.u_g.data, self.u_update_g.data)
 
             # Generalized Reaction Diffusion
             if 'generalized' in self.rd_types:
-                self.gen_rd(self.queue, self.v_np.shape, None, self.rho_g[0], self.kap_g[0], self.v_g, self.u_g, self.v_update_g)
-                self.gen_rd(self.queue, self.v_np.shape, None, self.rho_g[1], self.kap_g[1], self.v_g, self.u_g, self.u_update_g)
+                self.gen_rd(self.queue, self.v_np.shape, None, self.rho_g[0], self.kap_g[0], self.v_g.data, self.u_g.data, self.v_update_g.data)
+                self.gen_rd(self.queue, self.v_np.shape, None, self.rho_g[1], self.kap_g[1], self.v_g.data, self.u_g.data, self.u_update_g.data)
 
             if 'gray_scott' in self.rd_types:
-                self.gs(self.queue, self.v_np.shape, None,  self.v_g, self.u_g, self.F, self.k, self.v_update_g, self.u_update_g)
+                self.gs(self.queue, self.v_np.shape, None,  self.v_g.data, self.u_g.data, self.F, self.k, self.v_update_g.data, self.u_update_g.data)
 
             if 'gierer_mienhardt' in self.rd_types:
-                self.gm(self.queue, self.v_np.shape, None,  self.v_g, self.u_g, self.rho_gm, self.kap_gm, self.mu, self.nu, self.v_update_g, self.u_update_g)
+                self.gm(self.queue, self.v_np.shape, None,  self.v_g.data, self.u_g.data, self.rho_gm, self.kap_gm, self.mu, self.nu, self.v_update_g.data, self.u_update_g.data)
 
             # Update V and U
-            self.update(self.queue, self.v_np.shape, None, self.v_g, self.v_update_g, dt)
-            self.update(self.queue, self.v_np.shape, None, self.u_g, self.u_update_g, dt)
+            self.update(self.queue, self.v_np.shape, None, self.v_g.data, self.v_update_g.data, dt)
+            self.update(self.queue, self.v_np.shape, None, self.u_g.data, self.u_update_g.data, dt)
+
+            if self.ROUND:
+                self.v_g = clmath.round(self.round_const * self.v_g) / self.round_const
+                self.u_g = clmath.round(self.round_const * self.u_g) / self.round_const
 
         # Get values
-        cl.enqueue_copy(self.queue, self.v_np, self.v_g)
-        cl.enqueue_copy(self.queue, self.u_np, self.u_g)
+        self.v_np = self.v_g.get()
+        self.u_np = self.u_g.get()
 
         return self.v_np, self.u_np

@@ -1,11 +1,5 @@
 import numpy as np
 
-def round(a):
-    a *= 100
-    a = np.floor(a)
-    a /= 100
-    return a
-
 def gray_scott_np(F, k, v_np, u_np):
     v2 = np.power(v_np, 2)
     uv2 = u_np * v2
