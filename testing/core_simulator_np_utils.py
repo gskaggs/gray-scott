@@ -1,5 +1,11 @@
 import numpy as np
 
+def round(a):
+    a *= 100
+    a = np.floor(a)
+    a /= 100
+    return a
+
 def gray_scott_np(F, k, v_np, u_np):
     v2 = np.power(v_np, 2)
     uv2 = u_np * v2
@@ -40,6 +46,8 @@ def generalized_np(rho_np, kap_np, v_np, u_np):
                     num += rho_np[k][l][i][j] * v_pows[i] * u_pows[j]
                     den += kap_np[k][l][i][j] * v_pows[i] * u_pows[j]
 
-            updates[k] += np.divide(num, den, where=np.abs(den)>0.0001)
+
+            eps = 0.001
+            updates[k] += np.divide(num, den, where=np.abs(den) > eps)
 
     return updates

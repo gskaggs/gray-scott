@@ -1,19 +1,10 @@
 import numpy as np
 from core_simulator_np_utils import generalized_np, gray_scott_np, laplacian, gierer_mienhardt
+from core_simulator import CoreSimulator
 
-class CoreSimulatorNp():
+class CoreSimulatorNp(CoreSimulator):
     def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types):
-        self.v_np = v_np
-        self.u_np = u_np
-        self.rho_np = rho_np
-        self.kap_np = kap_np
-        self.F = F
-        self.k = k
-        self.rho_gm = rho_gm
-        self.kap_gm = kap_gm
-        self.mu = mu
-        self.nu = nu
-        self.rd_types = rd_types
+        super().__init__(v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types)
 
         v_update, u_update = np.zeros(v_np.shape)[1:-1, 1:-1], np.zeros(u_np.shape)[1:-1, 1:-1]
         self.updates_np = np.array((v_update, u_update))
@@ -33,5 +24,12 @@ class CoreSimulatorNp():
             
             self.v_np[1:-1, 1:-1] += dt * self.updates_np[0]
             self.u_np[1:-1, 1:-1] += dt * self.updates_np[1]
+            
+            # v_view, u_view = self.v_np[1:-1, 1:-1], self.u_np[1:-1, 1:-1]
+            # v_view += dt * self.updates_np[0]
+            # u_view += dt * self.updates_np[1]
+
+            np.clip(self.v_np[1:-1, 1:-1], 0, 5, out=self.v_np[1:-1, 1:-1])
+            np.clip(self.u_np[1:-1, 1:-1], 0, 5, out=self.u_np[1:-1, 1:-1])
 
         return self.v_np, self.u_np

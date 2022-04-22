@@ -7,21 +7,25 @@ def init_opencl():
 
 class CoreSimulator():
     def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types):
+        # Set type to float32 or these won't align in GPU memory
+        self.v_np = v_np.astype(np.float64)
+        self.u_np = u_np.astype(np.float64)
+        self.rho_np = rho_np.astype(np.float64)
+        self.kap_np = kap_np.astype(np.float64)
+        self.F = np.float64(F)
+        self.k = np.float64(k)
+        self.rho_gm = np.float64(rho_gm)
+        self.kap_gm = np.float64(kap_gm)
+        self.mu = np.float64(mu)
+        self.nu = np.float64(nu)
+        self.rd_types = rd_types
+
+class CoreSimulatorGpu(CoreSimulator):
+    def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types):
+        super().__init__(v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types)
+        
         # Initialize some opencl stuff
         self.ctx, self.queue, self.mf = init_opencl()
-
-        # Set type to float32 or these won't align in GPU memory
-        self.v_np = v_np.astype(np.float32)
-        self.u_np = u_np.astype(np.float32)
-        self.rho_np = rho_np.astype(np.float32)
-        self.kap_np = kap_np.astype(np.float32)
-        self.F = np.float32(F)
-        self.k = np.float32(k)
-        self.rho_gm = np.float32(rho_gm)
-        self.kap_gm = np.float32(kap_gm)
-        self.mu = np.float32(mu)
-        self.nu = np.float32(nu)
-        self.rd_types = rd_types
 
         # Build programs:
         # Laplacian Program
@@ -79,7 +83,7 @@ class CoreSimulator():
         self.kap_g = [cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=kap_np[i]) for i in range(2)]
 
     def simulate(self, dt, T):
-        dt = np.float32(dt)
+        dt = np.float64(dt)
         for _ in range(T):
             # Laplacian
             self.lap(self.queue, self.v_np.shape, None, self.v_g, self.v_update_g)
