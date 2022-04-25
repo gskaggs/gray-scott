@@ -1,4 +1,3 @@
-from curses import newpad
 import numpy as np
 
 class Chromosome:

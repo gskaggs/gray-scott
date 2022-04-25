@@ -4,8 +4,6 @@
 # Copyright 2021 ETH Zurich. All Rights Reserved.
 import os
 import numpy as np
-import subprocess as sp
-import matplotlib.pyplot as plt
 from PIL import Image as im
 from enum_util import RdType
 from core_simulator import CoreSimulatorGpu

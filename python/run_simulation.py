@@ -3,13 +3,6 @@
 # Created    : Sat Jan 30 2021 09:13:51 PM (+0100)
 # Description: Gray-Scott driver.  Use the --help argument for all options
 # Copyright 2021 ETH Zurich. All Rights Reserved.
-from curses import KEY_BACKSPACE
-from email.policy import default
-from fileinput import filename
-import threading
-import matplotlib
-matplotlib.use('Agg')
-
 import argparse
 import pickle
 import os
@@ -20,15 +13,11 @@ import numpy as np
 from ga import Chromosome
 from reaction_diffusion import ReactionDiffusionSimulator
 from ga import apply_fitness_function
-from thread_util import run_threads
-from thread_util import ThreadSafeIterable
 from process_util import start_processes
-from process_util import ProcessSafeIterable
 from process_util import end_processes
 from print_args import load_args
 from PIL import Image as im
-from PIL import ImageFont
-from PIL import ImageDraw 
+from PIL import ImageFont, ImageDraw
 from multiprocessing import Queue
 from datetime import timedelta
 import time
