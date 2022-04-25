@@ -2,7 +2,8 @@
 
 __kernel void iterate(
     __global const double *v_g,
-    __global double *v_update_g)
+    __global double *v_update_g,
+    const double dv)
 {
     uint gidx = get_global_id(0);
     uint gidy = get_global_id(1);
@@ -21,5 +22,5 @@ __kernel void iterate(
     if (gidy > 0)
         result += v_g[idx(gidx, (gidy-1))];
 
-    v_update_g[idx(gidx, gidy)] = result;
+    v_update_g[idx(gidx, gidy)] = dv * result;
 }

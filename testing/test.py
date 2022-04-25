@@ -14,7 +14,7 @@ ABS = True
 np.random.seed(0)
 
 # Initialize simulation hyper-parameters
-rd_types = ['generalized']
+rd_types = ['generalized', 'gray_scott']
 num_iters = 1 if DEBUG else 2000
 grid_size = 256                        
 dt = 0.001
@@ -38,11 +38,12 @@ if ABS:
     kap_np = np.abs(kap_np)
 
 rho_gm, kap_gm, mu, nu = -.5, .238, 1.0, .9 #np.random.rand(4)
+dv, du = 1, 1
 
 # Run simulation on GPU
 start = time.time()
 v, u = copy(v_og), copy(u_og)
-sonic = CoreSimulatorGpu(v, u, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types)
+sonic = CoreSimulatorGpu(v, u, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, dv, du, rd_types)
 v, u = sonic.simulate(dt, num_iters)
 end = time.time()
 
@@ -54,7 +55,7 @@ total_g = timedelta(seconds=(end-start))
 # Check on CPU with Numpy
 start = time.time()
 v, u = copy(v_og), copy(u_og)
-knuckles = CoreSimulatorNp(v, u, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types)
+knuckles = CoreSimulatorNp(v, u, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, dv, du, rd_types)
 v, u = knuckles.simulate(dt, num_iters)
 end = time.time()
 

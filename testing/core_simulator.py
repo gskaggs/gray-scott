@@ -8,7 +8,7 @@ def init_opencl():
     return ctx, cl.CommandQueue(ctx), cl.mem_flags
 
 class CoreSimulator():
-    def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types):
+    def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, dv, du, rd_types):
         # Set type to float32 or these won't align in GPU memory
         self.v_np = v_np.astype(np.float64)
         self.u_np = u_np.astype(np.float64)
@@ -20,13 +20,15 @@ class CoreSimulator():
         self.kap_gm = np.float64(kap_gm)
         self.mu = np.float64(mu)
         self.nu = np.float64(nu)
+        self.dv = np.float64(dv)
+        self.du = np.float64(du)
         self.rd_types = rd_types
         self.ROUND = False
         self.round_const = 10**6
 
 class CoreSimulatorGpu(CoreSimulator):
-    def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types):
-        super().__init__(v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, rd_types)
+    def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, dv, du, rd_types):
+        super().__init__(v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, dv, du, rd_types)
         
         # Initialize some opencl stuff
         self.ctx, self.queue, self.mf = init_opencl()
@@ -90,8 +92,8 @@ class CoreSimulatorGpu(CoreSimulator):
         dt = np.float64(dt)
         for _ in range(T):
             # Laplacian
-            self.lap(self.queue, self.v_np.shape, None, self.v_g.data, self.v_update_g.data)
-            self.lap(self.queue, self.u_np.shape, None, self.u_g.data, self.u_update_g.data)
+            self.lap(self.queue, self.v_np.shape, None, self.v_g.data, self.v_update_g.data, self.dv)
+            self.lap(self.queue, self.u_np.shape, None, self.u_g.data, self.u_update_g.data, self.du)
 
             # Generalized Reaction Diffusion
             if 'generalized' in self.rd_types:
