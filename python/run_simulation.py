@@ -3,6 +3,7 @@
 # Created    : Sat Jan 30 2021 09:13:51 PM (+0100)
 # Description: Gray-Scott driver.  Use the --help argument for all options
 # Copyright 2021 ETH Zurich. All Rights Reserved.
+from curses import KEY_BACKSPACE
 from email.policy import default
 from fileinput import filename
 import threading
@@ -60,6 +61,7 @@ def parse_args():
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
     parser.add_argument('--should_dump', action='store_true', default=False, help='Actually create png files during simulation')
     parser.add_argument('--dirichlet_vis', action='store_true', default=False, help='Visualize gradient side by side with sims')
+    parser.add_argument('--use_cpu', action='store_true', default=False, help='Use cpu instead of gpu for sims')
     parser.add_argument('--name', default='', type=str, help='Name of the simulation, used to save the results')
     parser.add_argument('-t', '--num_processes', default=6, type=int, help='Number of threads for the simulation')
     return parser.parse_known_args()
@@ -100,7 +102,7 @@ def process_function_ga(chromosomes, modified, args):
         if c == 'DONE':
             break
 
-        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage", rd_types=args.rd)
+        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage", use_cpu=args.use_cpu,rd_types=args.rd)
         pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=args.should_dump, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
         c.set_fitness(latest)
         c.set_pattern(pattern)
@@ -207,24 +209,16 @@ def run_generation(chromosomes, cur_iter, args):
 
 
 def init_gen_params():
-    rho = [[[np.random.random() for _ in range(5)] for _ in range(5)] for _ in range(2)]
-    kap = [[[np.random.random() for _ in range(5)] for _ in range(5)] for _ in range(2)]
+    '''
+    Axis 1: u, v
+    Axis 2: Terms 1, 2, 3
+    Axis 3: v pow
+    Axis 4: u pow
+    '''
+    rho = (2 * np.random.rand(2, 3, 3, 3) - 1).round(decimals=3)
+    kap = (2 * np.random.rand(2, 3, 3, 3) - 1).round(decimals=3)
 
-    # rho = np.array(rho)
-    # kap = np.array(kap)
-    # rho *= 0
-    # kap *= 0
-
-    # F = 0.0215
-    # k = 0.0526
-
-    # rho[0, 4, 3] = 1
-    # rho[0, 3, 2] = -(F + k)
-    # rho[1, 2, 2] = F
-    # rho[1, 4, 3] = -1
-    # rho[1, 2, 3] = -F
-
-    return np.array([rho, kap]).astype(np.float32)
+    return np.array([rho, kap]).astype(np.float64)
 
 
 def init_chromosomes(args):

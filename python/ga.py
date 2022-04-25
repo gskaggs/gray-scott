@@ -4,7 +4,7 @@ import numpy as np
 class Chromosome:
     def __init__(self, rd_params, gen_params=None):
         self._rd_params = rd_params
-        self.gen_params = gen_params if gen_params is not None else []
+        self.gen_params = gen_params if gen_params is not None else np.zeros((2,3,3,3))
         self.F = self.get_param('F')
         self.k = self.get_param('k')
 

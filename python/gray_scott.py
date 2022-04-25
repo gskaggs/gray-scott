@@ -8,8 +8,8 @@ import subprocess as sp
 import matplotlib.pyplot as plt
 from PIL import Image as im
 from enum_util import RdType
-from reaction_diffusion_np import gray_scott_np, generalized_np
-from reaction_diffusion import GrayScottSimulator, GeneralizedSimulator
+from core_simulator import CoreSimulatorGpu
+from core_simulator_np import CoreSimulatorNp
 
 class GrayScott:
     """
@@ -36,6 +36,7 @@ class GrayScott:
                  movie=False,
                  outdir='.',
                  name='',
+                 use_cpu=True,
                  rd_types=['gray_scott']):
         """
         Constructor.
@@ -90,6 +91,7 @@ class GrayScott:
         self.fs = Dv / dx**2
         self.dt = Fo * dx**2 / (4*max(Du, Dv))
 
+        self.use_cpu = use_cpu
         self.rd_type = RdType(rd_types)
 
         if self.rd_type.GIERER_MIENHARDT:
@@ -100,12 +102,12 @@ class GrayScott:
             # print('Du', self.fa, '\nDv', self.fs)
 
         if self.rd_type.GENERALIZED:
-            self.dt /= 1000
-            self.fs = .05
-            self.ga = .1
+            self.dt = 0.001
+            self.fs = 1
+            self.ga = 1
 
-        if self.rd_type.GENERALIZED:
-            self.rho_np, self.kap_np = self.gen_params[0], self.gen_params[1]
+        
+        self.rho_np, self.kap_np = self.gen_params[0], self.gen_params[1]
 
         # nodal grid (+ghosts)
         x = np.linspace(x0-dx, x1+dx, Nnodes+2)
@@ -134,12 +136,45 @@ class GrayScott:
         self.v_view = self.v[1:-1, 1:-1]
         self.u_view = self.u[1:-1, 1:-1]
 
-        if self.rd_type.GRAY_SCOTT:
-            self.grey_scott_sim = GrayScottSimulator(self.v, self.u, self.F, self.k)
-        if self.rd_type.GENERALIZED:
-            self.generalized_sim = GeneralizedSimulator(self.v, self.u, self.rho_np, self.kap_np)
+        if not self.use_cpu: 
+            self.simulator = CoreSimulatorGpu(self.v, self.u, self.rho_np, self.kap_np, self.F, self.k, \
+                self.rho, self.kappa, self.mu, self.nu, self.fs, self.fa, rd_types)
+        else:
+            self.simulator = CoreSimulatorNp(self.v, self.u, self.rho_np, self.kap_np, self.F, self.k, \
+                self.rho, self.kappa, self.mu, self.nu, self.fs, self.fa, rd_types)
 
     def integrate(self, t0, t1, *, dump_freq=100, report=50, dirichlet_vis=False, should_dump=False, fitness='pattern'):
+        """
+        Integrate system.
+
+        Arguments:
+            t0: start time
+            r1: end time
+            dump_freq: dump frequency in steps
+            report: stdout report frequency
+        
+        Returns:
+            pattern: is True if simulation terminates
+                     in a Turing pattern
+        """
+        t = t0
+        s = 0
+        latest = 0
+        T = int((t1 - t0) / self.dt)
+
+        self.v, self.u = self.simulator.simulate(self.dt, T)
+
+        pattern = self._check_pattern()
+        image = self._dump(s, t, dirichlet_vis)
+        
+        if fitness=='dirichlet':
+            latest = self._dirichlet()
+            if np.isnan(latest):
+                latest = -1
+
+        return pattern, latest, image
+
+    def integrate_old(self, t0, t1, *, dump_freq=100, report=50, dirichlet_vis=False, should_dump=False, fitness='pattern'):
         """
         Integrate system.
 
@@ -262,8 +297,8 @@ class GrayScott:
             # print('Updates', updates, 'V', self.v_view, sep='\n')
 
         if self.rd_type.GENERALIZED:
-            updates += np.array(self.generalized_sim.simulate())[:, 1:-1, 1:-1]
-            # updates += np.array(generalized_np(self.rho_np, self.kap_np, self.v_view, self.u_view))
+            # updates += np.array(self.generalized_sim.simulate())[:, 1:-1, 1:-1]
+            updates += np.array(generalized_np(self.rho_np, self.kap_np, self.v_view, self.u_view))
 
         v_update, u_update = updates[0], updates[1]
         self.v_view += self.dt * v_update

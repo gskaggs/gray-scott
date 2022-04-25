@@ -8,4 +8,4 @@ python3 run_simulation.py --param_search \
 -nu .9 \
 -kappa .238 \
 --dirichlet_vis \
--num_generalized 5
+--use_cpu 
