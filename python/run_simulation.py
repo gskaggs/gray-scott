@@ -17,8 +17,8 @@ import itertools
 import numpy as np
 
 # the file gray_scott.py must be in the PYTHONPATH or in the current directory
-from gray_scott import GrayScott
 from ga import Chromosome
+from reaction_diffusion import ReactionDiffusionSimulator
 from ga import apply_fitness_function
 from thread_util import run_threads
 from thread_util import ThreadSafeIterable
@@ -38,7 +38,7 @@ param_names = ['F', 'k', 'rho', 'mu', 'nu', 'kappa']
 
 def parse_args():
     """
-    Driver arguments.  These are passed to the GrayScott class
+    Driver arguments.  These are passed to the ReactionDiffusionSimulator class
     """
     parser = argparse.ArgumentParser()
     global param_names
@@ -51,33 +51,17 @@ def parse_args():
     parser.add_argument('-rd', default=['gray_scott'], type=str, nargs='+', help='The kind of reaction diffussion equation to use.')
 
     parser.add_argument('-T', '--end_time', default=3500, type=float, help='Final time')
-    parser.add_argument('-d', '--dump_freq', default=100, type=int, help='Dump frequency (integration steps)')
-    parser.add_argument('--demo', action='store_true', help='Run demo (https://www.chebfun.org/examples/pde/GrayScott.html)')
     parser.add_argument('--param_search', action='store_true', help='Run param search')
     parser.add_argument('--resume_file', default='resume.pkl', type=str, help='Where intermediate program values should be stored for genetic algorithm')
     parser.add_argument('--resume', action='store_true', help='Restart a simulation with a given setup stored in --resume_file')
     parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
     parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
-    parser.add_argument('--should_dump', action='store_true', default=False, help='Actually create png files during simulation')
     parser.add_argument('--dirichlet_vis', action='store_true', default=False, help='Visualize gradient side by side with sims')
     parser.add_argument('--use_cpu', action='store_true', default=False, help='Use cpu instead of gpu for sims')
     parser.add_argument('--name', default='', type=str, help='Name of the simulation, used to save the results')
     parser.add_argument('-t', '--num_processes', default=6, type=int, help='Number of threads for the simulation')
     return parser.parse_known_args()
-
-
-def demo(args):
-    """
-    Reproduces the example at https://www.chebfun.org/examples/pde/GrayScott.html
-    Pass the --demo option to the driver to run this demo.
-    """
-    rolls = GrayScott(F=0.04, k=0.06, movie=False, outdir=".", name="Rolls")
-    rolls.integrate(0, 3500, dump_freq=args.dump_freq, should_dump=True)
-    
-    gs = GrayScott(F=args.feed_rate, kappa=args.death_rate, movie=args.movie, outdir=args.outdir, name=args.name)
-    gs.integrate(0, args.end_time, dump_freq=args.dump_freq, should_dump=args.should_dump)
-
 
 def create_img_grid(images, text):
     W, H = images[0][0].width, images[0][0].height
@@ -95,15 +79,14 @@ def create_img_grid(images, text):
 
     return grid
 
-
 def process_function_ga(chromosomes, modified, args):
     while True:
         c = chromosomes.get()
         if c == 'DONE':
             break
 
-        sim = GrayScott(chromosome=c, movie=False, outdir="./garbage", use_cpu=args.use_cpu,rd_types=args.rd)
-        pattern, latest, image = sim.integrate(0, args.end_time, dump_freq=100, report=250, should_dump=args.should_dump, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
+        sim = ReactionDiffusionSimulator(chromosome=c, movie=False, outdir="./garbage", use_cpu=args.use_cpu,rd_types=args.rd)
+        pattern, latest, image = sim.integrate(args.end_time, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
         c.set_fitness(latest)
         c.set_pattern(pattern)
         c.set_image(image)
@@ -206,7 +189,6 @@ def run_generation(chromosomes, cur_iter, args):
     present_chromosomes(chromosomes, cur_iter, args)
 
     return chromosomes
-
 
 def init_gen_params():
     '''
@@ -321,10 +303,6 @@ def main():
 
     if args.num_generalized and 'generalized' not in args.rd:
         args.rd.append('generalized')
-
-    if args.demo:
-        demo(args)
-        return
 
     if args.resume:
         resume_sim(args)
