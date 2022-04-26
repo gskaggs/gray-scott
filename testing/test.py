@@ -10,7 +10,7 @@ from core_simulator_np import CoreSimulatorNp
 # Initialize testing parameters
 DEBUG = False
 LAPLACIAN = True
-ABS = False
+ABS = True
 np.random.seed(0)
 
 # Initialize simulation hyper-parameters
