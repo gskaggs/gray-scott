@@ -13,32 +13,11 @@ class Chromosome:
     def get_params(self):
         return self._rd_params
 
-    @property
-    def fitness(self):
-        return self._fitness
-
-    @property
-    def image(self):
-        return self._image
-
-    @property
-    def pattern(self):
-        return self._pattern
-
     def mutate(self):
         for k in self._rd_params:
             self._rd_params[k] += np.random.normal(0, .001)
 
         self.gen_params += np.random.normal(0, .005, self.gen_params.shape)
-
-    def set_pattern(self, pattern):
-        self._pattern = pattern
-
-    def set_fitness(self, fitness):
-        self._fitness = fitness
-
-    def set_image(self, image):
-        self._image = image
 
     def crossover(self, other):    
         new_rd_params = {}

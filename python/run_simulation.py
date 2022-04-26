@@ -76,9 +76,9 @@ def process_function_ga(chromosomes, modified, args):
 
         sim = ReactionDiffusionSimulator(chromosome=c, movie=False, outdir="./garbage", use_cpu=args.use_cpu,rd_types=args.rd)
         pattern, latest, image = sim.integrate(args.end_time, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
-        c.set_fitness(latest)
-        c.set_pattern(pattern)
-        c.set_image(image)
+        c.fitness = latest
+        c.pattern = pattern
+        c.image   = image
         modified.put(c)
 
     modified.put('DONE')
