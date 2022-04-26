@@ -6,24 +6,18 @@
 import argparse
 import pickle
 import os
-import itertools
-import numpy as np
 
 # the file gray_scott.py must be in the PYTHONPATH or in the current directory
-from ga import Chromosome
+from init_utils import prep_sim, init_chromosomes, param_names
+from present_utils import present_chromosomes
 from reaction_diffusion import ReactionDiffusionSimulator
 from ga import apply_fitness_function
 from process_util import start_processes
 from process_util import end_processes
 from print_args import load_args
-from PIL import Image as im
-from PIL import ImageFont, ImageDraw
-from multiprocessing import Queue
 from datetime import timedelta
 import time
 import psutil
-
-param_names = ['F', 'k', 'rho', 'mu', 'nu', 'kappa']
 
 def parse_args():
     """
@@ -44,29 +38,11 @@ def parse_args():
     parser.add_argument('--resume_file', default='resume.pkl', type=str, help='Where intermediate program values should be stored for genetic algorithm')
     parser.add_argument('--resume', action='store_true', help='Restart a simulation with a given setup stored in --resume_file')
     parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
-    parser.add_argument('--movie', action='store_true', help='Create a movie (requires ffmpeg)')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
     parser.add_argument('--dirichlet_vis', action='store_true', default=False, help='Visualize gradient side by side with sims')
     parser.add_argument('--use_cpu', action='store_true', default=False, help='Use cpu instead of gpu for sims')
-    parser.add_argument('--name', default='', type=str, help='Name of the simulation, used to save the results')
     parser.add_argument('-t', '--num_processes', default=6, type=int, help='Number of threads for the simulation')
     return parser.parse_known_args()
-
-def create_img_grid(images, text):
-    W, H = images[0][0].width, images[0][0].height
-    rows, cols = len(images), len(images[0])
-    grid = im.new("L", (rows*W, cols*H))
-    draw = ImageDraw.Draw(grid)
-    font = ImageFont.load_default()
-    
-    for i in range(rows):
-        for j in range(cols):
-            x, y = i*W, j*H
-            grid.paste(images[i][j], (x, y))
-            draw.rectangle((x,y,x+W,y+10),fill=(0))
-            draw.text((x, y),text[i][j],(255),font=font)
-
-    return grid
 
 def process_function_ga(chromosomes, modified, args):
     while True:
@@ -84,84 +60,6 @@ def process_function_ga(chromosomes, modified, args):
     modified.put('DONE')
 
 
-def grid_w_h(chromosomes):
-    N = len(chromosomes)
-    for W in range(N):
-        if W**2 >= N and N % W == 0:
-            return W, N//W
-
-    return N, 1
-
-def present_chromosomes(chromosomes, cur_iter, args):
-    W, H = grid_w_h(chromosomes)
-    img_text = [['' for _ in range(H)] for _ in range(W)]
-    images   = [[None for _ in range(H)] for _ in range(W)]
-    successful_params = []
-
-    for i in range(W):
-        for j in range(H):
-            cur = H*i+j
-            c = chromosomes[cur]
-            F, k, fitness = round(c.F, 4), round(c.k, 4), round(c.fitness, 2)
-            img_text[i][j] = f'#{cur+1}:'
-            if args.dirichlet_vis:
-                img_text[i][j] = img_text[i][j] + f' Fit={fitness}'
-            images[i][j]   = chromosomes[cur].image
-            if c.pattern:
-                successful_params.append((cur, c.get_params()))
-
-    sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
-    last_gen = cur_iter == args.num_iters or args.param_search
-    if last_gen:
-        print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
-        for idx, params in successful_params:
-            print(f'Chromosome #{idx+1}:')
-            print(params)
-
-    grid = create_img_grid(images, img_text)
-    sim_type = 'param_search' if args.param_search else args.fitness
-    rd_string = '_'.join(sorted(args.rd))
-    sim_dir =  f'./results/{rd_string}'
-    if not os.path.exists(sim_dir):
-        os.makedirs(sim_dir)
-
-    sim_id = f'{sim_dir}/{sim_type}_{len(chromosomes)}_{args.end_time}_{cur_iter}'
-    img_file, param_file = sim_id + '.png', sim_id + '.pkl'
-
-    count = 1
-    while os.path.exists(img_file) or os.path.exists(param_file):
-        img_file, param_file = sim_id + f'({count})' + '.png', sim_id + f'({count})' + '.pkl'
-        count += 1
-
-    have_display = bool(os.environ.get('DISPLAY', None))
-    if last_gen and have_display:
-        try:
-            grid.show()
-        except:
-            pass
-
-    print('Saving simulation image at', img_file)
-    grid.save(img_file)
-
-    with open(param_file, 'wb') as file:
-        pickle.dump((chromosomes, cur_iter, args), file)
-
-def prep_sim(chromosomes, cur_iter, args):
-    if args.param_search:
-        print('Beginning param search')
-    else:
-        print(f"GA Iteration {cur_iter} of {args.num_iters}")
-
-    for _ in range(args.num_processes):
-        chromosomes.append("DONE")
-
-    q, modified = Queue(), Queue()
-    for c in chromosomes:
-        q.put(c)
-    chromosomes = q
-
-    return chromosomes, modified
-
 def run_generation(chromosomes, cur_iter, args):
     # Prepare process safe queues
     chromosomes, modified = prep_sim(chromosomes, cur_iter, args)
@@ -176,51 +74,6 @@ def run_generation(chromosomes, cur_iter, args):
     # Save the results
     chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
     present_chromosomes(chromosomes, cur_iter, args)
-
-    return chromosomes
-
-def init_gen_params():
-    '''
-    Axis 1: u, v
-    Axis 2: Terms 1, 2, 3
-    Axis 3: v pow
-    Axis 4: u pow
-    '''
-    rho = (2 * np.random.rand(2, 3, 3, 3) - 1).round(decimals=3)
-    kap = (2 * np.random.rand(2, 3, 3, 3) - 1).round(decimals=3)
-
-    return np.array([rho, kap]).astype(np.float64)
-
-
-def init_chromosomes(args):
-    global param_names
-    args_map = vars(args)
-    param_bounds = [args_map[param_name] for param_name in param_names]
-    
-    for bounds in param_bounds:
-        # If only one value given, that's the only value the sim will use.
-        if len(bounds) == 1:
-            bounds.append(bounds[0])
-            bounds.append(1)
-
-        bounds[2] = int(bounds[2]) # So that np.linspace works
-
-    # bounds[0] is first value in range, bounds[1] is last, and 
-    # bounds[2] is the number of values to take on
-    param_bounds = [np.linspace(*bounds) for bounds in param_bounds]
-    chromosomes = []
-
-    for param_combo in itertools.product(*param_bounds):
-        rd_params = {}
-        for i in range(len(param_names)):
-            rd_params[param_names[i]] = param_combo[i] 
-        
-        for _ in range(args.num_generalized):
-            gen_params = init_gen_params()
-            chromosomes.append(Chromosome(rd_params, gen_params))
-
-        if 'generalized' not in args.rd:
-            chromosomes.append(Chromosome(rd_params))
 
     return chromosomes
 
