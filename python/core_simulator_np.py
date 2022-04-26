@@ -1,5 +1,5 @@
 import numpy as np
-from core_simulator_np_utils import generalized_np, gray_scott_np, laplacian, gierer_mienhardt
+from core_simulator_np_utils import generalized_np, gray_scott_np, laplacian, gierer_mienhardt, update_ghosts
 from core_simulator import CoreSimulator
 
 class CoreSimulatorNp(CoreSimulator):
@@ -27,6 +27,9 @@ class CoreSimulatorNp(CoreSimulator):
 
             np.clip(self.v_np[1:-1, 1:-1], 0, 5, out=self.v_np[1:-1, 1:-1])
             np.clip(self.u_np[1:-1, 1:-1], 0, 5, out=self.u_np[1:-1, 1:-1])
+
+            update_ghosts(self.v_np)
+            update_ghosts(self.u_np)
 
             if self.ROUND:
                 self.v_np = np.round(self.round_const * self.v_np) / self.round_const

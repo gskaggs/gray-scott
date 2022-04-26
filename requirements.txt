@@ -1,6 +1,7 @@
 numpy
 Pillow
-streamlit
+streamlit==1.4.0
 matplotlib
 psutil
+pandas
 pyopencl

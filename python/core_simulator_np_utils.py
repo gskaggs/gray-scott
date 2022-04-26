@@ -11,6 +11,18 @@ def gray_scott_np(F, k, v_np, u_np):
 def laplacian(a):
     return a[2:, 1:-1] + a[1:-1, 2:] + a[0:-2, 1:-1] + a[1:-1, 0:-2] - 4 * a[1:-1, 1:-1]
 
+def update_ghosts(v):
+    """
+    Apply periodic boundary conditions
+
+    Arguments:
+        v: 2D array
+    """
+    v[0, :] = v[-2, :]
+    v[:, 0] = v[:, -2]
+    v[-1, :] = v[1, :]
+    v[:, -1] = v[:, 1]
+
 def gierer_mienhardt(v, u, rho, kappa, mu, nu):
     a_view = v[1:-1, 1:-1]
     h_view = u[1:-1, 1:-1]

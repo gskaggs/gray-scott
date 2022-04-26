@@ -7,10 +7,9 @@ import argparse
 import pickle
 import os
 
-# the file gray_scott.py must be in the PYTHONPATH or in the current directory
 from init_utils import prep_sim, init_chromosomes, param_names
 from present_utils import present_chromosomes
-from reaction_diffusion import ReactionDiffusionSimulator
+from simulator import ReactionDiffusionSimulator
 from ga import apply_fitness_function
 from process_util import start_processes
 from process_util import end_processes
