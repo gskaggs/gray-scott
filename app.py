@@ -1,5 +1,5 @@
 import pandas as pd
-import streamlit as st
+import streamlit as st 
 
 st.title("Genetic Algorithms for the Physical Simulation of Flower Pigmentation")
 

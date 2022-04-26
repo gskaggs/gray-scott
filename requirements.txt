@@ -1,5 +1,6 @@
 numpy
 Pillow
+click<=8.0.4
 streamlit==1.4.0
 matplotlib
 psutil
