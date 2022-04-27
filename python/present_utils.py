@@ -69,7 +69,7 @@ def present_chromosomes(chromosomes, cur_iter, args):
         count += 1
 
     have_display = bool(os.environ.get('DISPLAY', None))
-    if last_gen and have_display:
+    if (last_gen or args.fitness == 'user') and have_display:
         try:
             grid.show()
         except:

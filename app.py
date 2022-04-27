@@ -42,7 +42,6 @@ div.stDownloadButton > button:first-child {
 </style>""", unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
-
 with col1: sim_button = st.button("Run Next Generation", disabled=len(prev_selections) != NUM_SURVIVORS)
 with col2: reset_button = st.button("Reset")
 with col3: download_button = st.download_button("Download Parameters", data=csv, file_name='chromosome_params.csv')
@@ -52,7 +51,9 @@ if sim_button:
     st.session_state['generation_id'] = generation_id
 
 if reset_button:
-    pass
+    generation_id = 1
+    st.session_state['generation_id'] = generation_id
+    st.experimental_rerun()
 
 selections = st.multiselect(
      f'Select {NUM_SURVIVORS} Chromosomes',

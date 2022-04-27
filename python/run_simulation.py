@@ -10,7 +10,7 @@ import os
 from init_utils import prep_sim, init_chromosomes, param_names
 from present_utils import present_chromosomes
 from simulator import ReactionDiffusionSimulator
-from ga import apply_fitness_function
+from ga import apply_selection, set_fitness
 from process_util import start_processes
 from process_util import end_processes
 from print_args import load_args
@@ -77,6 +77,10 @@ def run_generation(chromosomes, cur_iter, args):
     return chromosomes
 
 
+def get_preferred():
+    return [1]
+
+
 def resume_ga(args):
     chromosomes = init_chromosomes(args)
 
@@ -85,13 +89,14 @@ def resume_ga(args):
     if os.path.exists(args.resume_file):
         with open(args.resume_file, 'rb') as file:
             chromosomes, cur_iter, num_iters = pickle.load(file)
-            chromosomes = apply_fitness_function(chromosomes, 'user_input')
-
+            preferred = get_preferred()
+            set_fitness(chromosomes, preferred)  
+            chromosomes = apply_selection(chromosomes)
     else:
         with open(args.resume_file, 'w') as file:
             # Just making the file for now
             pass
-
+    
     chromosomes = run_generation(chromosomes, cur_iter, args)
 
     with open(args.resume_file, 'wb') as file:
@@ -105,7 +110,7 @@ def genetic_algorithm(args):
 
     for cur_iter in range(1, num_iters+1):
         chromosomes = run_generation(chromosomes, cur_iter, args)
-        chromosomes = apply_fitness_function(chromosomes, 'default')
+        chromosomes = apply_selection(chromosomes)
 
 
 def param_search(args):
@@ -123,7 +128,7 @@ def resume_sim(args):
 
     while cur_iter <= args.num_iters:
         chromosomes = run_generation(chromosomes, cur_iter, args)
-        chromosomes = apply_fitness_function(chromosomes, 'default')
+        chromosomes = apply_selection(chromosomes)
         cur_iter += 1
 
 

@@ -41,47 +41,34 @@ class Chromosome:
 
         return result
 
-def apply_fitness_function(chromosomes, type):
-    N = len(chromosomes)
-    result = [None] * N
+def set_fitness(chromosomes, preferred):
+    total_chromosomes = len(chromosomes)
+    num_preferred = len(preferred)
+    num_remaining = total_chromosomes - num_preferred
 
-    if type == 'default':
-        chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
-        eps = 0.2 # Percent of population which survives to next round
-        survivors = max(int(eps * N), 1)
-        best = range(survivors)
-        for i in range(survivors):
-            result[i] = chromosomes[i]
-        for i in range(survivors, N):
-            mate1, mate2 = tuple(map(lambda x: chromosomes[x], np.random.choice(best, 2)))
-            result[i] = mate1.crossover(mate2)
+    preferred = set([idx-1 for idx in preferred])
+    fitness_preferred = .9
+    fitness_remaining = .1
 
-    else:
-        best = []
-        eps = .25
-        survivors = max(int(eps*N), 1)
-        while True:
-            try:
-                best = list(map(int, input(f'Top {survivors} performers:').strip().split(' ')))
-            except:
-                print("Input integers please.")
-                continue 
-            if len(best) != survivors:
-                continue
-            
-            if any(map(lambda x: x < 1 or x > N, best)):
-                continue
-            
-            # 0-index
-            best = list(map(lambda x: x-1, best))
+    for idx in range(total_chromosomes):
+        c = chromosomes[idx]
+        if idx in preferred:
+            c.fitness = fitness_preferred / num_preferred
+        else:
+            c.fitness = fitness_remaining / num_remaining    
 
-            break
-        
-        for i in range(survivors):
-            result[i] = chromosomes[best[i]]
+def apply_selection(chromosomes):
+    total_chromosomes = len(chromosomes)
+    new_generation    = []
 
-        for i in range(survivors, N):
-            mate1, mate2 = tuple(map(lambda x: chromosomes[x], np.random.choice(best, 2)))
-            result[i] = mate1.crossover(mate2)
+    total_fitness = sum(c.fitness for c in chromosomes)
+    probabilities = [c.fitness / total_fitness for c in chromosomes]
 
-    return result
+    for _ in range(total_chromosomes):
+        mate1, mate2 = np.random.choice(chromosomes, 2, p=probabilities)
+        child = mate1.crossover(mate2)
+        child.mutate()
+        new_generation.append(child)
+    
+    return new_generation
+
