@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python3 run_simulation.py --genetic_algorithm -fitness dirichlet -t 6 -T 200 -num_iters 2 \
+python3 sim_driver_tui.py --genetic_algorithm -fitness dirichlet -t 6 -T 200 -num_iters 2 \
 -rd gierer_mienhardt \
 -rho .5 \
 -mu 1 \

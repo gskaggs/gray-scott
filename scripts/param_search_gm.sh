@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python3 run_simulation.py --param_search \
+python3 sim_driver_tui.py --param_search \
 -t 6 -T 3000 \
 -p_a 0 1 5 \
 -p_a0 0 0 1 \
