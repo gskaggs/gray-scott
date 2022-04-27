@@ -83,7 +83,6 @@ def get_preferred():
 
 def resume_ga(args):
     chromosomes = init_chromosomes(args)
-
     cur_iter, num_iters = 1, args.num_iters
     
     if os.path.exists(args.resume_file):
