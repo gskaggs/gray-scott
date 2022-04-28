@@ -14,7 +14,7 @@ def grid_w_h(chromosomes):
 def create_img_grid(images, text):
     W, H = images[0][0].width, images[0][0].height
     rows, cols = len(images), len(images[0])
-    grid = im.new("L", (rows*W, cols*H))
+    grid = im.new("RGB", (rows*W, cols*H))
     draw = ImageDraw.Draw(grid)
     font = ImageFont.load_default()
     
@@ -80,3 +80,5 @@ def present_chromosomes(chromosomes, cur_iter, args):
 
     with open(param_file, 'wb') as file:
         pickle.dump((chromosomes, cur_iter, args), file)
+
+    return grid

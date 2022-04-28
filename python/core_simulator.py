@@ -38,35 +38,35 @@ class CoreSimulatorGpu(CoreSimulator):
 
         # Build programs:
         # Laplacian Program
-        kernel_file = open('../c/laplacian.c', 'r')
+        kernel_file = open('./c/laplacian.c', 'r')
         kernel = kernel_file.read()
 
         prg = cl.Program(self.ctx, kernel).build()
         self.lap = prg.iterate
 
         # Generalized Reaction-Diffusion Program
-        kernel_file = open('../c/generalized.c', 'r')
+        kernel_file = open('./c/generalized.c', 'r')
         kernel = kernel_file.read()
 
         prg = cl.Program(self.ctx, kernel).build()
         self.gen_rd = prg.iterate
 
         # Gray Scott Reaction-Diffusion Program
-        kernel_file = open('../c/gray_scott.c', 'r')
+        kernel_file = open('./c/gray_scott.c', 'r')
         kernel = kernel_file.read()
 
         prg = cl.Program(self.ctx, kernel).build()
         self.gs = prg.iterate
 
         # Gray Scott Reaction-Diffusion Program
-        kernel_file = open('../c/gierer_mienhardt.c', 'r')
+        kernel_file = open('./c/gierer_mienhardt.c', 'r')
         kernel = kernel_file.read()
 
         prg = cl.Program(self.ctx, kernel).build()
         self.gm = prg.iterate
 
         # Update Program
-        kernel_file = open('../c/update.c', 'r')
+        kernel_file = open('./c/update.c', 'r')
         kernel = kernel_file.read()
 
         prg = cl.Program(self.ctx, kernel).build()

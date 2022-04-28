@@ -1,7 +1,10 @@
 import pandas as pd
 import streamlit as st 
+from PIL import Image as im
+from sim_driver_gui import GuiSimulationDriver
 
 st.title("Genetic Algorithms for the Physical Simulation of Flower Pigmentation")
+
 
 st.markdown(
     '''
@@ -17,6 +20,8 @@ NUM_CHROMOSOMES = 20
 NUM_SURVIVORS = 1
 
 generation_id = st.session_state.get('generation_id', 1)
+sim_driver = st.session_state.get('sim_driver', GuiSimulationDriver())
+
 st.write(f'Current generation: {generation_id}')
 
 options = list(range(NUM_CHROMOSOMES))
@@ -49,10 +54,15 @@ with col3: download_button = st.download_button("Download Parameters", data=csv,
 if sim_button:
     generation_id += 1
     st.session_state['generation_id'] = generation_id
+    st.session_state['cur_image'] = im.new("RGB", (2000, 1440), (0, 0, 255))
+
+current_image = st.session_state.get('cur_image', im.new("RGB", (2000, 1440)))
+st.image(current_image)
 
 if reset_button:
     generation_id = 1
     st.session_state['generation_id'] = generation_id
+    st.session_state['cur_image'] = im.new("RGB", (2000, 1440))
     st.experimental_rerun()
 
 selections = st.multiselect(
@@ -63,9 +73,6 @@ selections = st.multiselect(
 
 st.session_state['selections'] = selections
 
-if len(prev_selections) != len(selections):
-    st.experimental_rerun()
-
 st.markdown(
     '''
     ## Motivation
@@ -75,4 +82,9 @@ st.markdown(
     ## Memes
     ''')
 
-    
+if sim_button:    
+    st.session_state['cur_image'] = sim_driver.run_generation(generation_id)
+    st.experimental_rerun()
+
+if len(prev_selections) != len(selections):
+    st.experimental_rerun()

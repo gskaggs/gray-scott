@@ -7,13 +7,13 @@ import argparse
 import pickle
 import os
 
-from init_utils import prep_sim, init_chromosomes, param_names
-from present_utils import present_chromosomes
-from simulator import ReactionDiffusionSimulator
-from ga import apply_selection, set_fitness
-from process_util import start_processes
-from process_util import end_processes
-from print_args import load_args
+from python.init_utils import prep_sim, init_chromosomes, param_names
+from python.present_utils import present_chromosomes
+from python.simulator import ReactionDiffusionSimulator
+from python.ga import apply_selection, set_fitness
+from python.process_util import start_processes
+from python.process_util import end_processes
+from python.print_args import load_args
 from datetime import timedelta
 import time
 import psutil

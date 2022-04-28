@@ -3,11 +3,13 @@
 # Description: Gray-Scott reaction-diffusion
 # Copyright 2021 ETH Zurich. All Rights Reserved.
 import os
+from pickletools import uint8
 import numpy as np
 from PIL import Image as im
-from enum_util import RdType
-from core_simulator import CoreSimulatorGpu
-from core_simulator_np import CoreSimulatorNp
+from python.enum_util import RdType
+from python.core_simulator import CoreSimulatorGpu
+from python.core_simulator_np import CoreSimulatorNp
+from python.colors import viridis
 
 class ReactionDiffusionSimulator:
     """
@@ -184,6 +186,18 @@ class ReactionDiffusionSimulator:
 
         return diff > theta
 
+    def to_color_array(self, array):
+        max_val = np.max(array)
+        if max_val < 10e-7:
+            return (255*np.array([[viridis[0]] * array.shape[0]]* array.shape[1])).astype(np.uint8)
+
+        array = array / max_val
+        np.clip(array, 0, 1, out=array)
+
+        result = 255*np.array([[viridis[int(x * (len(viridis)-1))] for x in row] for row in array])
+        result = result.astype(np.uint8)
+        return result
+
     def _dump(self, dirichlet_vis=False, *, both=False, save=False):
         """
         Dump snapshot
@@ -196,15 +210,16 @@ class ReactionDiffusionSimulator:
 
         print('Max v', np.max(self.v))
 
-        V = (255 * self.v[1:-1, 1:-1]).astype(np.uint8)
+        V = self.to_color_array(self.v[1:-1, 1:-1])
+
         grad = [l**2 for l in np.gradient(self.v[1:-1, 1:-1])]
         grad = grad[0] + grad[1]
-        grad = 255 * grad / np.max(grad)
-        grad = grad.astype(np.uint8)
+        grad = self.to_color_array(grad)
+
         if dirichlet_vis:
-            image = im.fromarray(np.append(V, grad, 1))      
+            image = im.fromarray(np.append(V, grad, 1), 'RGB')      
         else:
-            image = im.fromarray(V)    
+            image = im.fromarray(V, 'RGB')    
         if save: 
            image.save(os.path.join(self.outdir, self.name + f"_frame_{self.dump_count:06d}.png"))
         return image

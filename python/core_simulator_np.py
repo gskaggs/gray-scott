@@ -1,6 +1,6 @@
 import numpy as np
-from core_simulator_np_utils import generalized_np, gray_scott_np, laplacian, gierer_mienhardt, update_ghosts
-from core_simulator import CoreSimulator
+from python.core_simulator_np_utils import generalized_np, gray_scott_np, laplacian, gierer_mienhardt, update_ghosts
+from python.core_simulator import CoreSimulator
 
 class CoreSimulatorNp(CoreSimulator):
     def __init__(self, v_np, u_np, rho_np, kap_np, F, k, rho_gm, kap_gm, mu, nu, dv, du, rd_types):

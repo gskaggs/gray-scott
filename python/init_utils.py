@@ -1,4 +1,4 @@
-from ga import Chromosome
+from python.ga import Chromosome
 from multiprocessing import Queue
 import itertools
 import numpy as np
