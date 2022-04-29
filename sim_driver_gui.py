@@ -7,6 +7,7 @@ from python.init_utils import init_chromosomes, prep_sim
 from python.present_utils import present_chromosomes
 from sim_driver_tui import process_function_ga
 from python.process_util import start_processes, end_processes
+from python.ga import set_fitness, apply_selection
 
 class GuiSimulationDriver():
     def __init__(self):
@@ -26,13 +27,15 @@ class GuiSimulationDriver():
         self.fitness = 'dirichlet'
         self.end_time = 200
         self.dirichlet_vis = False
+        self.test_speed = False
         self.chromosomes = init_chromosomes(self)
-
-    def reset(self):
-        pass
 
     def get_spreadsheet(self):
         return pd.DataFrame(list(range(20)))
+
+    def register_preferred(self, preferred):
+        set_fitness(self.chromosomes, preferred)  
+        self.chromosomes = apply_selection(self.chromosomes)
 
     def run_generation(self, generation_id):
         # Prepare process safe queues

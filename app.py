@@ -10,13 +10,10 @@ st.markdown(
     '''
     An undergraduate thesis by _Grant Skaggs._
 
-    Dank tunes:
-    [https://open.spotify.com/track/6tuxI8MMx9T67pYjlMvgxG?si=90123bffd5d14d8a](https://open.spotify.com/track/6tuxI8MMx9T67pYjlMvgxG?si=90123bffd5d14d8a)
-
     ## Demo
     ''')
 
-NUM_CHROMOSOMES = 20
+NUM_CHROMOSOMES = 100
 NUM_SURVIVORS = 1
 
 generation_id = st.session_state.get('generation_id', 1)
@@ -47,11 +44,13 @@ div.stDownloadButton > button:first-child {
 </style>""", unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
-with col1: sim_button = st.button("Run Next Generation", disabled=len(prev_selections) != NUM_SURVIVORS)
+with col1: sim_button = st.button("Run Next Generation", disabled=len(prev_selections) < 1 and generation_id != 1)
 with col2: reset_button = st.button("Reset")
 with col3: download_button = st.download_button("Download Parameters", data=csv, file_name='chromosome_params.csv')
 
 if sim_button:
+    if generation_id != 1:
+        sim_driver.register_preferred(prev_selections)
     generation_id += 1
     st.session_state['generation_id'] = generation_id
     st.session_state['cur_image'] = im.new("RGB", (2000, 1440), (0, 0, 255))
@@ -63,24 +62,16 @@ if reset_button:
     generation_id = 1
     st.session_state['generation_id'] = generation_id
     st.session_state['cur_image'] = im.new("RGB", (2000, 1440))
+    st.session_state['sim_driver'] = GuiSimulationDriver()
     st.experimental_rerun()
 
 selections = st.multiselect(
-     f'Select {NUM_SURVIVORS} Chromosomes',
+     f'Select at least 1 chromosome',
      options,
      default_options,
      key=generation_id)
 
 st.session_state['selections'] = selections
-
-st.markdown(
-    '''
-    ## Motivation
-    ## Background
-    ## Methods
-    ## Results
-    ## Memes
-    ''')
 
 if sim_button:    
     st.session_state['cur_image'] = sim_driver.run_generation(generation_id)

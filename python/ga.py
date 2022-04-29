@@ -17,7 +17,7 @@ class Chromosome:
         return self._rd_params
 
     def mutate(self):
-        sd = {'F': .001, 'k': .001, 'rho': .01, 'mu': .01, 'nu': .01, 'kappa': .01}
+        sd = {'F': .001, 'k': .001, 'rho': .02, 'mu': .01, 'nu': .01, 'kappa': .05}
         for k in self._rd_params:
             self._rd_params[k] += np.random.normal(0, sd[k])
 
