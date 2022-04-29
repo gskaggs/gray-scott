@@ -2,8 +2,15 @@ from python.ga import Chromosome
 from multiprocessing import Queue
 import itertools
 import numpy as np
+import os
 
 param_names = ['F', 'k', 'rho', 'mu', 'nu', 'kappa']
+
+def load_args(resume_file):
+    assert os.path.exists(resume_file), 'Resume file doesn\'t exist.'
+    with open(resume_file, 'rb') as file: 
+        return pickle.load(file)
+
 
 def init_gen_params():
     '''

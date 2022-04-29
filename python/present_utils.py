@@ -23,7 +23,7 @@ def create_img_grid(images, text):
             x, y = i*W, j*H
             grid.paste(images[i][j], (x, y))
             draw.rectangle((x,y,x+W,y+10),fill=(0))
-            draw.text((x, y),text[i][j],(255),font=font)
+            draw.text((x, y),text[i][j],(255, 255, 255),font=font)
 
     return grid
 
@@ -65,7 +65,7 @@ def present_chromosomes(chromosomes, cur_iter, args):
 
     count = 1
     while os.path.exists(img_file) or os.path.exists(param_file):
-        img_file, param_file = sim_id + f'({count})' + '.png', sim_id + f'({count})' + '.pkl'
+        img_file, param_file = sim_id + f'v{count}' + '.png', sim_id + f'v{count}' + '.pkl'
         count += 1
 
     have_display = bool(os.environ.get('DISPLAY', None))
