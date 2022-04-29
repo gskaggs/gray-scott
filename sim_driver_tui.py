@@ -37,6 +37,7 @@ def parse_args():
     parser.add_argument('--resume_file', default='resume.pkl', type=str, help='Where intermediate program values should be stored for genetic algorithm')
     parser.add_argument('--resume', action='store_true', help='Restart a simulation with a given setup stored in --resume_file')
     parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
+    parser.add_argument('--test_speed', action='store_true', help='Run genetic algorithm')
     parser.add_argument('--outdir', default='.', type=str, help='Output directory')
     parser.add_argument('--dirichlet_vis', action='store_true', default=False, help='Visualize gradient side by side with sims')
     parser.add_argument('--use_cpu', action='store_true', default=False, help='Use cpu instead of gpu for sims')
@@ -68,7 +69,8 @@ def run_generation(chromosomes, cur_iter, args):
     processes = start_processes(args.num_processes, process_function_ga, (chromosomes, modified, args))
     chromosomes = end_processes(processes, modified, args.num_processes)
     end = time.time()
-    print(f'Generation {cur_iter} time taken {timedelta(seconds=end-start)}')
+    if not args.test_speed: 
+        print(f'Generation {cur_iter} time taken {timedelta(seconds=end-start)}')
 
     # Save the results
     chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
@@ -137,6 +139,42 @@ def make_output_dirs(args):
         if not os.path.exists(dir):
             os.makedirs(dir)
 
+def test_speed(args):
+    rds = [['gray_scott'], ['gierer_mienhardt'], ['generalized']]
+    reps = 5
+    for rd in rds:
+        print('Model', rd[0])
+
+        # GPU
+        start = time.time()
+        args.use_cpu = False
+        for _ in range(reps):
+            param_search(args)
+        end = time.time()
+
+        print(f'GPU took {timedelta(seconds=(end-start)/reps)}')
+       
+        # CPU-16
+        start = time.time()
+        args.use_cpu = True
+        args.num_processes = 16
+        for _ in range(reps):
+            param_search(args)
+        end = time.time()
+
+        print(f'CPU-{args.num_processes} took {timedelta(seconds=(end-start)/reps)}')
+
+        # CPU-16
+        start = time.time()
+        args.use_cpu = True
+        args.num_processes = 1
+        for _ in range(reps):
+            param_search(args)
+        end = time.time()
+
+        print(f'CPU-{args.num_processes} took {timedelta(seconds=(end-start)/reps)}')
+
+
 def main():
     args, _ = parse_args()
 
@@ -145,6 +183,9 @@ def main():
     print(f'Num_processes = {args.num_processes}')
 
     make_output_dirs(args)
+    if args.test_speed:
+        test_speed(args)
+        return
 
     if args.num_generalized and 'generalized' not in args.rd:
         args.rd.append('generalized')

@@ -217,7 +217,7 @@ class ReactionDiffusionSimulator:
             both: if true, dump contours for both species U and V
         """
 
-        print('Max v', np.max(self.v))
+        # print('Max v', np.max(self.v))
 
         V = self.to_color_array(self.v[1:-1, 1:-1])
 
