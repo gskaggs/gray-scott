@@ -110,8 +110,8 @@ class ReactionDiffusionSimulator:
             self.du = 1
             self.dv = 1
 
-        self.dv = chromosome.dv 
-        self.du = chromosome.du
+        # self.dv = chromosome.dv 
+        # self.du = chromosome.du
 
         # print(f'du {self.du}, dv {self.dv}')
         

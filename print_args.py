@@ -28,6 +28,7 @@ def print_all_chromosomes(chromosomes, args, cur_iter):
         print('Chromosome', i)
         print(f'Fitness={c.fitness}')
         print(c._rd_params)
+        print(c.du, c.dv)
 
 def make_sim_image(v):
     N = len(v)
