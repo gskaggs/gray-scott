@@ -78,7 +78,7 @@ def set_fitness(chromosomes, preferred):
         else:
             c.fitness = fitness_remaining / num_remaining    
 
-def apply_selection(chromosomes, preferred=None):
+def apply_selection(chromosomes, preferred=[]):
     total_chromosomes = len(chromosomes)
     new_generation    = []
     preferred = set([idx-1 for idx in preferred])

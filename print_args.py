@@ -40,8 +40,8 @@ def make_sim_image(v):
     
     def color(value):
         theta = .5
-        color1 = (255, 0, 0)
-        color2 = (255, 255, 255)
+        color1 = (255, 255, 255)
+        color2 = (140, 52, 92)
         return color1 if value < theta else color2
 
     color_array = np.array([[color(value) for value in row] for row in v]).astype(np.uint8)
@@ -55,7 +55,7 @@ def print_target_chromsome(c, c_idx, args):
     if 'generalized' in args.rd:
         print(c.gen_params)
     
-    sim = ReactionDiffusionSimulator(chromosome=c, movie=False, outdir="./garbage", use_cpu=args.use_cpu, rd_types=args.rd)
+    sim = ReactionDiffusionSimulator(chromosome=c, movie=False, outdir="./garbage", initial_condition=args.init, N=args.N, use_cpu=args.use_cpu,rd_types=args.rd)
     sim.integrate(args.end_time, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
     
     image_file = './results/targeted/' + '_'.join(sorted(args.rd)) + '.png'

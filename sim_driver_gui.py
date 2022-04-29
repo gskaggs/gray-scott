@@ -11,18 +11,18 @@ from python.ga import set_fitness, apply_selection
 
 class GuiSimulationDriver():
     def __init__(self):
-        self.rd = ['gray_scott']
+        self.rd = ['gierer_mienhardt']
         self.param_search = False
         self.num_individuals = 20
         self.num_iters = -1
         self.num_processes = 6
         self.use_cpu = False
         self.fitness = 'dirichlet'
-        self.end_time = 1000
+        self.end_time = 200
         self.dirichlet_vis = False
         self.test_speed = False
         self.N = 256
-        self.init = 'trefethen'
+        self.init = 'trefethen' # 'trefethen'
         self.chromosomes = init_chromosomes(self)
 
     def get_spreadsheet(self):
@@ -30,7 +30,7 @@ class GuiSimulationDriver():
 
     def register_preferred(self, preferred):
         set_fitness(self.chromosomes, preferred)  
-        self.chromosomes = apply_selection(self.chromosomes)
+        self.chromosomes = apply_selection(self.chromosomes, preferred)
 
     def run_generation(self, generation_id):
         # Prepare process safe queues
