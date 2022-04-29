@@ -106,7 +106,7 @@ class ReactionDiffusionSimulator:
             # print('Du', self.du, '\nDv', self.dv)
 
         if self.rd_type.GENERALIZED:
-            self.dt = 0.01
+            self.dt = 0.05
             self.du = 1
             self.dv = 1
 
