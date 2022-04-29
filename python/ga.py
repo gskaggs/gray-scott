@@ -40,11 +40,14 @@ class Chromosome:
             for i in range(len(new_rho[k])):
                 for j in range(len(new_rho[k][i])):
                     for l in range(len(new_rho[k][i][j])):
-                        rho_options = (self.gen_params[0][k][i][j][l], other.gen_params[0][k][i][j][l])
-                        kap_options = (self.gen_params[1][k][i][j][l], other.gen_params[1][k][i][j][l])
-                        if self.fitness == -1 or other.fitness == -1:
-                            rho_options = (2*np.random.random() - 1, 2*np.random.random()-1)
-                            kap_options = (2*np.random.random() - 1, 2*np.random.random()-1)
+                        rho_options = [self.gen_params[0][k][i][j][l], other.gen_params[0][k][i][j][l]]
+                        kap_options = [self.gen_params[1][k][i][j][l], other.gen_params[1][k][i][j][l]]
+                        if self.fitness == 0:
+                            rho_options[0] = (2*np.random.random() - 1, 2*np.random.random()-1)
+                            kap_options[0] = (2*np.random.random() - 1, 2*np.random.random()-1)
+                        if other.fitness == 0:
+                            rho_options[1] = (2*np.random.random() - 1, 2*np.random.random()-1)
+                            kap_options[1] = (2*np.random.random() - 1, 2*np.random.random()-1)
                             
                         new_rho[k][i][j][l] = np.random.choice(rho_options)
                         new_kap[k][i][j][l] = np.random.choice(kap_options)
@@ -80,7 +83,10 @@ def apply_selection(chromosomes):
     new_generation    = []
 
     total_fitness = sum(c.fitness for c in chromosomes)
-    probabilities = [c.fitness / total_fitness for c in chromosomes]
+    if total_fitness == 0:
+        probabilities = [1 / len(chromosomes) for c in chromosomes]
+    else:
+        probabilities = [c.fitness / total_fitness for c in chromosomes]
 
     for _ in range(total_chromosomes):
         mate1, mate2 = np.random.choice(chromosomes, 2, p=probabilities)

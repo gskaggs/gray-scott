@@ -94,18 +94,19 @@ class ReactionDiffusionSimulator:
         self.rd_type = RdType(rd_types)
 
         if self.rd_type.GRAY_SCOTT:
+            self.dt = .5
             self.du = 0.32768
             self.dv = 0.16384
 
         if self.rd_type.GIERER_MIENHARDT:
-            self.dt /= 10
+            self.dt = .05
             self.du = 2
             self.dv = .1
             # print('dt', self.dt)
             # print('Du', self.du, '\nDv', self.dv)
 
         if self.rd_type.GENERALIZED:
-            self.dt = 0.001
+            self.dt = 0.01
             self.du = 1
             self.dv = 1
 
@@ -179,6 +180,11 @@ class ReactionDiffusionSimulator:
         This is used as a heuristic for how complex the pattern is.
         '''
         v_view = self.v[1:-1, 1:-1]
+
+        max_v = np.max(v_view)
+        if max_v < 10e-7 or max_v > 4.5:
+            return 0
+
         grad = np.gradient(v_view / np.max(v_view))
         grad = [l**2 for l in grad]
         return sum(sum(sum(grad)))
