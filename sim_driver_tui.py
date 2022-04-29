@@ -32,7 +32,7 @@ def parse_args():
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
     parser.add_argument('-rd', default=['gray_scott'], type=str, nargs='+', help='The kind of reaction diffussion equation to use.')
 
-    parser.add_argument('-T', '--end_time', default=3500, type=float, help='Final time')
+    parser.add_argument('-T', '--end_time', default=2000, type=float, help='Final time')
     parser.add_argument('--param_search', action='store_true', help='Run param search')
     parser.add_argument('--resume_file', default='resume.pkl', type=str, help='Where intermediate program values should be stored for genetic algorithm')
     parser.add_argument('--resume', action='store_true', help='Restart a simulation with a given setup stored in --resume_file')
@@ -142,6 +142,7 @@ def make_output_dirs(args):
 def test_speed(args):
     rds = [['gray_scott'], ['gierer_mienhardt'], ['generalized']]
     reps = 5
+    args.end_time = 500
     for rd in rds:
         print('Model', rd[0])
         args.rd = rd
