@@ -1,0 +1,8 @@
+py print_args.py --resume_file ./results/gray_scott/dirichlet_20_200_4.pkl --target_chromosome 1
+
+py print_args.py --resume_file ./results/gray_scott/dirichlet_20_200_4.pkl --target_chromosome 2
+
+py print_args.py --resume_file ../dirichlet/gierer_mienhardt/dirichlet_20_500.0_4.pkl --target_chromosome 5
+
+
+

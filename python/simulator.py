@@ -163,6 +163,8 @@ class ReactionDiffusionSimulator:
         num_iters = int(final_t / self.dt)
 
         self.v, self.u = self.simulator.simulate(self.dt, num_iters)
+        self.v = np.nan_to_num(self.v)
+        self.u = np.nan_to_num(self.u)
 
         pattern = self._check_pattern()
         image = self._dump(dirichlet_vis)
