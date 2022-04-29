@@ -146,6 +146,8 @@ def test_speed(args):
     args.num_individuals = 20
     for rd in rds:
         print('Model', rd[0])
+        if rd[0] != 'gray_scott':
+            args.end_time = 20
         args.rd = rd
 
         # GPU
