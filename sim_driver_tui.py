@@ -107,7 +107,6 @@ def resume_ga(args):
 
 def genetic_algorithm(args):
     chromosomes = init_chromosomes(args)
-
     num_iters = args.num_iters
 
     for cur_iter in range(1, num_iters+1):

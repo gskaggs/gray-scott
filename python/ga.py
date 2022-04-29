@@ -3,11 +3,12 @@ import numpy as np
 class Chromosome:
     def __init__(self, rd_params, du, dv, gen_params=None):
         self._rd_params = rd_params
-        self.gen_params = gen_params if gen_params is not None else np.zeros((2,3,3,3))
+        self.gen_params = gen_params if gen_params is not None else np.zeros((2,2,3,3,3))
         self.F = self.get_param('F')
         self.k = self.get_param('k')
         self.du = du
         self.dv = dv
+        self.fitness = 0
 
     def get_param(self, param_name):
         return self._rd_params.get(param_name, 0)
@@ -22,7 +23,7 @@ class Chromosome:
 
         self.du += np.random.normal(0, .02)
         self.dv += np.random.normal(0, .02)
-        
+
         self.gen_params += np.random.normal(0, .05, self.gen_params.shape)
 
     def crossover(self, other):    
@@ -32,18 +33,26 @@ class Chromosome:
             options = (self._rd_params[k], other._rd_params[k])
             new_rd_params[k] = np.random.choice(options)
 
-        new_gen_params = np.empty_like(self.gen_params)
-        for k in range(len(self.gen_params)):
-            for i in range(len(self.gen_params[k])):
-                for j in range(len(self.gen_params[k][i])):
-                    for l in range(len(self.gen_params[k][i][j])):
-                        options = (self.gen_params[k][i][j][l], other.gen_params[k][i][j][l])
-                        if self.fitness == -1:
-                            options = (np.random.random(), np.random.random())
-                        new_gen_params[k][i][j][l] = np.random.choice(options)
+        new_rho = np.empty_like(self.gen_params[0])
+        new_kap = np.empty_like(self.gen_params[1])
 
-        du = np.choice((self.du, other.du))
-        dv = np.choice((self.dv, other.dv))
+        for k in range(len(new_rho)):
+            for i in range(len(new_rho[k])):
+                for j in range(len(new_rho[k][i])):
+                    for l in range(len(new_rho[k][i][j])):
+                        rho_options = (self.gen_params[0][k][i][j][l], other.gen_params[0][k][i][j][l])
+                        kap_options = (self.gen_params[1][k][i][j][l], other.gen_params[1][k][i][j][l])
+                        if self.fitness == -1 or other.fitness == -1:
+                            rho_options = (2*np.random.random() - 1, 2*np.random.random()-1)
+                            kap_options = (2*np.random.random() - 1, 2*np.random.random()-1)
+                            
+                        new_rho[k][i][j][l] = np.random.choice(rho_options)
+                        new_kap[k][i][j][l] = np.random.choice(kap_options)
+
+        du = np.random.choice((self.du, other.du))
+        dv = np.random.choice((self.dv, other.dv))
+
+        new_gen_params = np.array([new_rho, new_kap]).astype(np.float64)
 
         result = Chromosome(new_rd_params, du, dv, new_gen_params)
         result.mutate()
