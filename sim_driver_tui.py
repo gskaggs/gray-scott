@@ -28,7 +28,7 @@ def parse_args():
 
     parser.add_argument('-num_iters', default=1, type=int, help='How many generations of ga to run.')
     parser.add_argument('-num_generalized', default=0, type=int, help='How big the population of generalized chromosomes is.')
-    parser.add_argument('-num_individuals', default=1, type=int, help='How big the population of chromosomes is.')
+    parser.add_argument('-num_individuals', default=50, type=int, help='How big the population of chromosomes is.')
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
     parser.add_argument('-rd', default=['gray_scott'], type=str, nargs='+', help='The kind of reaction diffussion equation to use.')
 
