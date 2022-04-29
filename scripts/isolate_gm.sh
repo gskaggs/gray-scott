@@ -6,5 +6,4 @@ python3 ./sim_driver_tui.py --param_search \
 -rho .5 \
 -mu 1 \
 -nu .9 \
--kappa .238 \
---use_cpu 
+-kappa .238 

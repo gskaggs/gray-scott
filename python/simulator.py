@@ -85,25 +85,34 @@ class ReactionDiffusionSimulator:
         dx = L / N
 
         # intermediates
-        self.fa = Du / dx**2
-        self.fs = Dv / dx**2
+        # fs refers to dv, fa refers to du
+        self.du = Du / dx**2
+        self.dv = Dv / dx**2
         self.dt = Fo * dx**2 / (4*max(Du, Dv))
 
         self.use_cpu = use_cpu
         self.rd_type = RdType(rd_types)
 
+        if self.rd_type.GRAY_SCOTT:
+            self.du = 0.32768
+            self.dv = 0.16384
+
         if self.rd_type.GIERER_MIENHARDT:
             self.dt /= 10
-            self.fs = .1
-            self.fa = 2
+            self.du = 2
+            self.dv = .1
             # print('dt', self.dt)
-            # print('Du', self.fa, '\nDv', self.fs)
+            # print('Du', self.du, '\nDv', self.dv)
 
         if self.rd_type.GENERALIZED:
             self.dt = 0.001
-            self.fs = 1
-            self.ga = 1
+            self.du = 1
+            self.dv = 1
 
+        self.dv = chromosome.dv 
+        self.du = chromosome.du
+
+        print(f'du {self.du}, dv {self.dv}')
         
         self.rho_np, self.kap_np = self.gen_params[0], self.gen_params[1]
 
@@ -130,10 +139,10 @@ class ReactionDiffusionSimulator:
 
         if not self.use_cpu: 
             self.simulator = CoreSimulatorGpu(self.v, self.u, self.rho_np, self.kap_np, self.F, self.k, \
-                self.rho, self.kappa, self.mu, self.nu, self.fs, self.fa, rd_types)
+                self.rho, self.kappa, self.mu, self.nu, self.dv, self.du, rd_types)
         else:
             self.simulator = CoreSimulatorNp(self.v, self.u, self.rho_np, self.kap_np, self.F, self.k, \
-                self.rho, self.kappa, self.mu, self.nu, self.fs, self.fa, rd_types)
+                self.rho, self.kappa, self.mu, self.nu, self.dv, self.du, rd_types)
 
     def integrate(self, final_t, *, dirichlet_vis=False, fitness='pattern'):
         """

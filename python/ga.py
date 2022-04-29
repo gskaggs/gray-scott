@@ -1,11 +1,13 @@
 import numpy as np
 
 class Chromosome:
-    def __init__(self, rd_params, gen_params=None):
+    def __init__(self, rd_params, du, dv, gen_params=None):
         self._rd_params = rd_params
         self.gen_params = gen_params if gen_params is not None else np.zeros((2,3,3,3))
         self.F = self.get_param('F')
         self.k = self.get_param('k')
+        self.du = du
+        self.dv = dv
 
     def get_param(self, param_name):
         return self._rd_params.get(param_name, 0)
@@ -14,13 +16,18 @@ class Chromosome:
         return self._rd_params
 
     def mutate(self):
+        sd = {'F': .001, 'k': .001, 'rho': .01, 'mu': .01, 'nu': .01, 'kappa': .01}
         for k in self._rd_params:
-            self._rd_params[k] += np.random.normal(0, .001)
+            self._rd_params[k] += np.random.normal(0, sd[k])
 
-        self.gen_params += np.random.normal(0, .005, self.gen_params.shape)
+        self.du += np.random.normal(0, .02)
+        self.dv += np.random.normal(0, .02)
+        
+        self.gen_params += np.random.normal(0, .05, self.gen_params.shape)
 
     def crossover(self, other):    
         new_rd_params = {}
+
         for k in self._rd_params:
             options = (self._rd_params[k], other._rd_params[k])
             new_rd_params[k] = np.random.choice(options)
@@ -35,8 +42,10 @@ class Chromosome:
                             options = (np.random.random(), np.random.random())
                         new_gen_params[k][i][j][l] = np.random.choice(options)
 
+        du = np.choice((self.du, other.du))
+        dv = np.choice((self.dv, other.dv))
 
-        result = Chromosome(new_rd_params, new_gen_params)
+        result = Chromosome(new_rd_params, du, dv, new_gen_params)
         result.mutate()
 
         return result

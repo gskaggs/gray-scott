@@ -19,6 +19,7 @@ class GuiSimulationDriver():
         self.kappa = [0]
         self.num_generalized = 0
         self.param_search = False
+        self.num_individuals = 6
         self.num_iters = -1
         self.num_processes = 6
         self.use_cpu = False

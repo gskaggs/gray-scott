@@ -5,6 +5,7 @@ import numpy as np
 import os
 
 param_names = ['F', 'k', 'rho', 'mu', 'nu', 'kappa']
+ranges = {'F': (.01, .11), 'k': (0.01, .11), 'rho': (.3, .7), 'nu': (.7, 1.1), 'kappa': (.1, .8)}
 
 def load_args(resume_file):
     assert os.path.exists(resume_file), 'Resume file doesn\'t exist.'
@@ -24,7 +25,40 @@ def init_gen_params():
 
     return np.array([rho, kap]).astype(np.float64)
 
+def init_rd_params():
+    rd_params = {}
+    for k in ranges:
+        rd_params[k] = np.random.uniform(*ranges[k])
+    return rd_params
+
+def init_dif_genes(rd):
+    if 'gierer_mienhardt' in rd:
+        du = [1.5, 2.5]
+        dv = [.05, .15]
+    elif 'gray_scott' in rd:
+        du = [.27, .37]
+        dv = [.1, .2]
+    elif 'generalized' in rd:
+        du = [.5, 1.5]
+        dv = [.5, 1.5]
+    else:
+        raise NotImplementedError
+    
+    return np.random.uniform(*du), np.random.uniform(*dv)
+
 def init_chromosomes(args):
+    result = []
+
+    for _ in range(args.num_individuals):
+        rd_params = init_rd_params()
+        gen_params = init_gen_params()
+        du, dv = init_dif_genes(args.rd)
+        c = Chromosome(rd_params, du, dv, gen_params)
+        result.append(c)
+    
+    return result
+
+def init_chromosomes_old(args):
     global param_names
     args_map = vars(args)
     param_bounds = [args_map[param_name] for param_name in param_names]
@@ -49,10 +83,10 @@ def init_chromosomes(args):
         
         for _ in range(args.num_generalized):
             gen_params = init_gen_params()
-            chromosomes.append(Chromosome(rd_params, gen_params))
+            chromosomes.append(Chromosome(rd_params, du, dv, gen_params))
 
         if 'generalized' not in args.rd:
-            chromosomes.append(Chromosome(rd_params))
+            chromosomes.append(Chromosome(rd_params, du, dv))
 
     return chromosomes
 
