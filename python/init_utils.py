@@ -94,7 +94,8 @@ def prep_sim(chromosomes, cur_iter, args):
     if args.param_search:
         print('Beginning param search')
     else:
-        print(f"GA Iteration {cur_iter} of {args.num_iters}")
+        if not args.test_speed:
+            print(f"GA Iteration {cur_iter} of {args.num_iters}")
 
     for _ in range(args.num_processes):
         chromosomes.append("DONE")

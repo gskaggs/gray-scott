@@ -74,7 +74,8 @@ def run_generation(chromosomes, cur_iter, args):
 
     # Save the results
     chromosomes.sort(key=lambda c: -c.fitness) # sorted by decreasing fitness
-    present_chromosomes(chromosomes, cur_iter, args)
+    if not args.test_speed:
+        present_chromosomes(chromosomes, cur_iter, args)
 
     return chromosomes
 
