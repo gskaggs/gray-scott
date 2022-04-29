@@ -43,11 +43,11 @@ class Chromosome:
                         rho_options = [self.gen_params[0][k][i][j][l], other.gen_params[0][k][i][j][l]]
                         kap_options = [self.gen_params[1][k][i][j][l], other.gen_params[1][k][i][j][l]]
                         if self.fitness == 0:
-                            rho_options[0] = (2*np.random.random() - 1, 2*np.random.random()-1)
-                            kap_options[0] = (2*np.random.random() - 1, 2*np.random.random()-1)
+                            rho_options[0] = 2*np.random.random() - 1
+                            kap_options[0] = 2*np.random.random() - 1
                         if other.fitness == 0:
-                            rho_options[1] = (2*np.random.random() - 1, 2*np.random.random()-1)
-                            kap_options[1] = (2*np.random.random() - 1, 2*np.random.random()-1)
+                            rho_options[1] = 2*np.random.random() - 1
+                            kap_options[1] = 2*np.random.random() - 1
                             
                         new_rho[k][i][j][l] = np.random.choice(rho_options)
                         new_kap[k][i][j][l] = np.random.choice(kap_options)
