@@ -12,22 +12,17 @@ from python.ga import set_fitness, apply_selection
 class GuiSimulationDriver():
     def __init__(self):
         self.rd = ['gray_scott']
-        self.F = [.01, .08, 3]
-        self.k = [.04, .06, 2]
-        self.rho = [0]
-        self.mu = [0]
-        self.nu = [0]
-        self.kappa = [0]
-        self.num_generalized = 0
         self.param_search = False
-        self.num_individuals = 6
+        self.num_individuals = 20
         self.num_iters = -1
         self.num_processes = 6
         self.use_cpu = False
         self.fitness = 'dirichlet'
-        self.end_time = 200
+        self.end_time = 1000
         self.dirichlet_vis = False
         self.test_speed = False
+        self.N = 256
+        self.init = 'trefethen'
         self.chromosomes = init_chromosomes(self)
 
     def get_spreadsheet(self):

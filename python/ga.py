@@ -17,7 +17,7 @@ class Chromosome:
         return self._rd_params
 
     def mutate(self):
-        sd = {'F': .001, 'k': .001, 'rho': .02, 'mu': .01, 'nu': .01, 'kappa': .05}
+        sd = {'F': .05, 'k': .005, 'rho': .2, 'mu': .1, 'nu': .1, 'kappa': .5}
         for k in self._rd_params:
             self._rd_params[k] += np.random.normal(0, sd[k])
 
@@ -78,9 +78,13 @@ def set_fitness(chromosomes, preferred):
         else:
             c.fitness = fitness_remaining / num_remaining    
 
-def apply_selection(chromosomes):
+def apply_selection(chromosomes, preferred=None):
     total_chromosomes = len(chromosomes)
     new_generation    = []
+    preferred = set([idx-1 for idx in preferred])
+
+    for idx in preferred:
+        new_generation.append(chromosomes[idx])
 
     total_fitness = sum(c.fitness for c in chromosomes)
     if total_fitness == 0:
@@ -88,7 +92,8 @@ def apply_selection(chromosomes):
     else:
         probabilities = [c.fitness / total_fitness for c in chromosomes]
 
-    for _ in range(total_chromosomes):
+    
+    for _ in range(total_chromosomes - len(preferred)):
         mate1, mate2 = np.random.choice(chromosomes, 2, p=probabilities)
         child = mate1.crossover(mate2)
         child.mutate()

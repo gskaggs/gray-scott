@@ -32,9 +32,11 @@ def parse_args():
     parser.add_argument('-fitness', default='dirichlet', type=str, help='The kind of fitness function to use.')
     parser.add_argument('-rd', default=['gray_scott'], type=str, nargs='+', help='The kind of reaction diffussion equation to use.')
 
+    parser.add_argument('-N', default=256, type=int, help='Final time')
     parser.add_argument('-T', '--end_time', default=200, type=float, help='Final time')
     parser.add_argument('--param_search', action='store_true', help='Run param search')
     parser.add_argument('--resume_file', default='resume.pkl', type=str, help='Where intermediate program values should be stored for genetic algorithm')
+    parser.add_argument('--init', default='trefethen', type=str, help='Where intermediate program values should be stored for genetic algorithm')
     parser.add_argument('--resume', action='store_true', help='Restart a simulation with a given setup stored in --resume_file')
     parser.add_argument('--genetic_algorithm', action='store_true', help='Run genetic algorithm')
     parser.add_argument('--test_speed', action='store_true', help='Run genetic algorithm')
@@ -50,7 +52,7 @@ def process_function_ga(chromosomes, modified, args):
         if c == 'DONE':
             break
 
-        sim = ReactionDiffusionSimulator(chromosome=c, movie=False, outdir="./garbage", use_cpu=args.use_cpu,rd_types=args.rd)
+        sim = ReactionDiffusionSimulator(chromosome=c, movie=False, outdir="./garbage", initial_condition=args.init, N=args.N, use_cpu=args.use_cpu,rd_types=args.rd)
         pattern, latest, image = sim.integrate(args.end_time, dirichlet_vis=args.dirichlet_vis, fitness=args.fitness) 
         c.fitness = latest
         c.pattern = pattern

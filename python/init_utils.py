@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 param_names = ['F', 'k', 'rho', 'mu', 'nu', 'kappa']
-ranges = {'F': (.01, .11), 'k': (0.01, .11), 'rho': (.45, .55), 'mu': (.95, 1.0), 'nu': (.85, .95), 'kappa': (.2, .8)}
+ranges = {'F': (.02, .08), 'k': (0.04, .06), 'rho': (.45, .55), 'mu': (.95, 1.0), 'nu': (.85, .95), 'kappa': (.2, .8)}
 
 def load_args(resume_file):
     assert os.path.exists(resume_file), 'Resume file doesn\'t exist.'

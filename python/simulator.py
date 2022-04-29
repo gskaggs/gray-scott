@@ -248,6 +248,9 @@ class ReactionDiffusionSimulator:
         self.u = np.ones(dim) / 2 + 0.5 * np.random.uniform(0, 1, dim)
         self.v = np.ones(dim) / 4 + 0.5 * np.random.uniform(0, 1, dim)
 
+        self.u = np.random.uniform(0, 1, dim)
+        self.v = np.random.uniform(0, 1, dim)
+
     def _trefethen_IC(self):
         """
         Initial condition for the example used by N. Trefethen at
