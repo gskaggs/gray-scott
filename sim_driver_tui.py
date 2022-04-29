@@ -144,6 +144,7 @@ def test_speed(args):
     reps = 5
     for rd in rds:
         print('Model', rd[0])
+        args.rd = rd
 
         # GPU
         start = time.time()
