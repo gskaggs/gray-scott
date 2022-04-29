@@ -48,7 +48,8 @@ def present_chromosomes(chromosomes, cur_iter, args):
     sim_type = 'Paramater search' if args.param_search else 'Genetic algorithm'
     last_gen = cur_iter == args.num_iters or args.param_search
     if last_gen:
-        print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
+        if not args.test_speed: 
+            print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
         for idx, params in successful_params:
             print(f'Chromosome #{idx+1}:')
             print(params)

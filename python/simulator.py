@@ -112,7 +112,7 @@ class ReactionDiffusionSimulator:
         self.dv = chromosome.dv 
         self.du = chromosome.du
 
-        print(f'du {self.du}, dv {self.dv}')
+        # print(f'du {self.du}, dv {self.dv}')
         
         self.rho_np, self.kap_np = self.gen_params[0], self.gen_params[1]
 
