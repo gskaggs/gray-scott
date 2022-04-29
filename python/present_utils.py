@@ -50,9 +50,9 @@ def present_chromosomes(chromosomes, cur_iter, args):
     if last_gen:
         if not args.test_speed: 
             print(f"{sim_type} terminated with {len(successful_params)} turing patterns out of {len(chromosomes)} chromosomes")
-        for idx, params in successful_params:
-            print(f'Chromosome #{idx+1}:')
-            print(params)
+            for idx, params in successful_params:
+                print(f'Chromosome #{idx+1}:')
+                print(params)
 
     grid = create_img_grid(images, img_text)
     sim_type = 'param_search' if args.param_search else args.fitness
