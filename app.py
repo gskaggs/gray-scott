@@ -10,72 +10,74 @@ st.markdown(
     '''
     An undergraduate thesis by _Grant Skaggs._
 
-    ## Demo
+    Under construction.
     ''')
 
-NUM_CHROMOSOMES = 100
-NUM_SURVIVORS = 1
 
-generation_id = st.session_state.get('generation_id', 1)
-sim_driver = st.session_state.get('sim_driver', GuiSimulationDriver())
+if False:
+    NUM_CHROMOSOMES = 100
+    NUM_SURVIVORS = 1
 
-st.write(f'Current generation: {generation_id}')
+    generation_id = st.session_state.get('generation_id', 1)
+    sim_driver = st.session_state.get('sim_driver', GuiSimulationDriver())
 
-options = list(range(NUM_CHROMOSOMES))
-default_options = [] # options[:NUM_SURVIVORS]
-prev_selections = st.session_state.get('selections', default_options)
+    st.write(f'Current generation: {generation_id}')
 
-@st.cache
-def convert_df(df):
-    # IMPORTANT: Cache the conversion to prevent computation on every rerun
-    return df.to_csv().encode('utf-8')
+    options = list(range(NUM_CHROMOSOMES))
+    default_options = [] # options[:NUM_SURVIVORS]
+    prev_selections = st.session_state.get('selections', default_options)
 
-df = pd.DataFrame(list(range(20)))
-csv = convert_df(df)
+    @st.cache
+    def convert_df(df):
+        # IMPORTANT: Cache the conversion to prevent computation on every rerun
+        return df.to_csv().encode('utf-8')
 
-st.markdown("""
-<style>
-div.stButton > button:first-child {
-    width: 100%;
-}
-div.stDownloadButton > button:first-child {
-    width: 100%;
-}
-</style>""", unsafe_allow_html=True)
+    df = pd.DataFrame(list(range(20)))
+    csv = convert_df(df)
 
-col1, col2, col3 = st.columns(3)
-with col1: sim_button = st.button("Run Next Generation", disabled=len(prev_selections) < 1 and generation_id != 1)
-with col2: reset_button = st.button("Reset")
-with col3: download_button = st.download_button("Download Parameters", data=csv, file_name='chromosome_params.csv')
+    st.markdown("""
+    <style>
+    div.stButton > button:first-child {
+        width: 100%;
+    }
+    div.stDownloadButton > button:first-child {
+        width: 100%;
+    }
+    </style>""", unsafe_allow_html=True)
 
-if sim_button:
-    if generation_id != 1:
-        sim_driver.register_preferred(prev_selections)
-    generation_id += 1
-    st.session_state['generation_id'] = generation_id
-    st.session_state['cur_image'] = im.new("RGB", (2000, 1440), (0, 0, 255))
+    col1, col2, col3 = st.columns(3)
+    with col1: sim_button = st.button("Run Next Generation", disabled=len(prev_selections) < 1 and generation_id != 1)
+    with col2: reset_button = st.button("Reset")
+    with col3: download_button = st.download_button("Download Parameters", data=csv, file_name='chromosome_params.csv')
 
-current_image = st.session_state.get('cur_image', im.new("RGB", (2000, 1440)))
-st.image(current_image)
+    if sim_button:
+        if generation_id != 1:
+            sim_driver.register_preferred(prev_selections)
+        generation_id += 1
+        st.session_state['generation_id'] = generation_id
+        st.session_state['cur_image'] = im.new("RGB", (2000, 1440), (0, 0, 255))
 
-if reset_button:
-    generation_id = 1
-    st.session_state['generation_id'] = generation_id
-    st.session_state['cur_image'] = im.new("RGB", (2000, 1440))
-    st.session_state['sim_driver'] = GuiSimulationDriver()
-    st.experimental_rerun()
+    current_image = st.session_state.get('cur_image', im.new("RGB", (2000, 1440)))
+    st.image(current_image)
 
-selections = st.multiselect(
-     f'Select at least 1 chromosome',
-     options,
-     default_options,
-     key=generation_id)
+    if reset_button:
+        generation_id = 1
+        st.session_state['generation_id'] = generation_id
+        st.session_state['cur_image'] = im.new("RGB", (2000, 1440))
+        st.session_state['sim_driver'] = GuiSimulationDriver()
+        st.experimental_rerun()
 
-st.session_state['selections'] = selections
+    selections = st.multiselect(
+        f'Select at least 1 chromosome',
+        options,
+        default_options,
+        key=generation_id)
 
-if sim_button:    
-    st.session_state['cur_image'] = sim_driver.run_generation(generation_id)
-    st.experimental_rerun()
+    st.session_state['selections'] = selections
 
-if len(prev_selections) != len(selections):
-    st.experimental_rerun()
+    if sim_button:    
+        st.session_state['cur_image'] = sim_driver.run_generation(generation_id)
+        st.experimental_rerun()
+
+    if len(prev_selections) != len(selections):
+        st.experimental_rerun()
