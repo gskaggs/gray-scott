@@ -7,6 +7,7 @@ from PIL import Image as im
 from sim_driver_gui import GuiSimulationDriver
 import numpy as np
 
+print(os. getcwd())
 st.set_page_config('GA for Reaction Diffusion', '🌸')
 
 markdown_file = open('./README.md', 'r')
