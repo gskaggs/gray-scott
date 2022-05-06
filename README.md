@@ -14,17 +14,17 @@ As nice as that sounds, there are some potential disadvantages of texture mappin
 1. Scalability: Though some methods exist for this purpose, it's very often difficult to generate many copies of a texture with small modifications. So, for example, to make a patch of flowers which don't all look identical is hard.
 1. Biological insight: Texture mapping offers no insight into the fundamental biology of flowers.
 
-Physical simulation, on the other hand, does not suffer from any of these disadvantages. You don't get distortions when you use different geometries. You can (usually) easily modify parameters of the simulation to create many unique individuals. You will often get biological instight into the systems you are simulating.
+Physical simulation, on the other hand, does not suffer from these disadvantages. You don't get distortions when you use different geometries. You can (usually) easily modify parameters of the simulation to create many unique individuals. You will often get biological instight into the systems you are simulating.
 
 Now you're thinking, _Okay, Grant, you've sold me. But what about the genetic algorithms?_
 
-Fair enough. The genetic algorithms come into play because simulating flowers can be really difficult. The state of the art in this space is a paper called "Modeling Flower Pigmentation Patterns" by Ringham et al. They got very impressive results, but at the end of the day... Well that's just the problem, modeling these flowers takes _all day._ \
+Fair enough. The genetic algorithms come into play because simulating flowers can be really difficult. The state of the art in this space is a paper called "Modeling Flower Pigmentation Patterns" by Ringham et al. They got very impressive results, but at the end of the day... Well that's just the problem, modeling these flowers takes _all day._
 
 It turns out that for flowers with complicated patterns, the best way to simulate them is using a class of partial differential equations called _reaction-diffusion equations._ This is all well and good but finding the right parameters for these equations is very difficult. So much so that the process of physically simulating these flowers can take days.
 
 In order to better search the space of these reaction-diffusion equations, I've explored in this thesis the use of genetic algorithms.
 
-## Methods
+## How It Works
 
 I applied genetic algorithms to three different reaction-diffusion models:
 
@@ -43,7 +43,7 @@ The selection method used was [fitness proportional selection.](https://en.wikip
 
 ## Results
 
-Check out the three case studies I did:
+Check out the three case studies I performed:
 
 #### Phalaenoris Nanking’s 4.55
 

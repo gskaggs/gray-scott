@@ -12,9 +12,18 @@ st.set_page_config('GA for Reaction Diffusion', '🌸')
 
 markdown_file = open('./README.md', 'r')
 markdown = markdown_file.read()
-markdown = markdown[:markdown.rfind('\n')]
-markdown = markdown[:markdown.rfind('\n')]
+markdown = markdown[:markdown.rfind('## Results')]
+markdown = markdown + '## Results\nCheck out the three case studies I performed:\n'
 st.markdown(markdown)
+
+st.markdown('#### Phalaenoris Nanking’s 4.55')
+st.image('case_studies/flower1_done.png')
+st.markdown('#### Kohleria')
+st.image('case_studies/flower2_done.png')
+st.markdown('#### Mimulus guttatus')
+st.image('case_studies/flower3_done.png')
+
+st.markdown('## Try It Out!')
 
 default_pop_size = 20
 pop_size = st.session_state.get('pop_size', default_pop_size)
