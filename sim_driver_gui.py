@@ -10,13 +10,14 @@ from python.process_util import start_processes, end_processes
 from python.ga import set_fitness, apply_selection
 
 class GuiSimulationDriver():
+    model_map = {'Gray-Scott___': 'gray_scott', 'Gierer-Meinhardt___': 'gierer_meinhardt', 'GenRD': 'generalized'}
     def __init__(self):
         self.rd = ['gierer_mienhardt']
         self.param_search = False
         self.num_individuals = 20
         self.num_iters = -1
         self.num_processes = 6
-        self.use_cpu = False
+        self.use_cpu = True
         self.fitness = 'dirichlet'
         self.end_time = 200
         self.dirichlet_vis = False
@@ -29,10 +30,21 @@ class GuiSimulationDriver():
         return pd.DataFrame(list(range(20)))
 
     def register_preferred(self, preferred):
-        set_fitness(self.chromosomes, preferred)  
-        self.chromosomes = apply_selection(self.chromosomes, preferred)
+        if self.fitness == 'user_input':
+            set_fitness(self.chromosomes, preferred)  
+            self.chromosomes = apply_selection(self.chromosomes, preferred)
+
+    def set_params(self, dt, T, model, fitness, pop_size):
+        self.fitness = 'dirichlet' if fitness == 'Dirichlet___' else 'user_input'
+        self.num_individuals = pop_size
+        self.dt = dt
+        self.end_time = T
+        self.rd = [self.model_map[model]]
 
     def run_generation(self, generation_id):
+        if len(self.chromosomes) != self.num_individuals:
+            self.chromosomes = init_chromosomes(self)
+
         # Prepare process safe queues
         self.chromosomes, modified = prep_sim(self.chromosomes, generation_id, self)
         
