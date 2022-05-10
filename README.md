@@ -1,6 +1,6 @@
 # Genetic Algorithms for the Physical Simulation of Flower Pigmentation Patterns
 
-An undergraduate thesis by _Grant Skaggs_ for the Turing Scholars honors distinction.
+An undergraduate thesis by _Grant Skaggs_ for the Turing Scholars honors distinction. Check out the full thesis document at [https://grantskaggs.com/thesis](https://grantskaggs.com/thesis).
 
 ## Background
 
